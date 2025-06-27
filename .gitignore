@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.ENV/
+
+# Logs and output
+logs/
+*.log
+*.csv
+*.db
+
+# Bytecode caches
+*.pyc
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Flask-specific
+instance/
+*.pid
+
+# Configs and secrets
+*config.json
+*.bin
+
+# Jupyter (if used)
+.ipynb_checkpoints/
+
+# VS Code / IDEs
+.vscode/
+.idea/
+
+# OS-generated
+ehthumbs.db
+Icon?
+Desktop.ini
