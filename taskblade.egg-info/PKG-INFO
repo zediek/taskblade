@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: taskblade
+Version: 0.1
+Summary: Multi-user, multi-threaded API task runner
+Author: Zediek
+License: MIT
+Requires-Python: >=3.6
+License-File: LICENSE
+Dynamic: license-file

@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+taskblade.py
+taskblade.egg-info/PKG-INFO
+taskblade.egg-info/SOURCES.txt
+taskblade.egg-info/dependency_links.txt
+taskblade.egg-info/entry_points.txt
+taskblade.egg-info/top_level.txt

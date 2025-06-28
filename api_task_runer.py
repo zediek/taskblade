@@ -644,9 +644,9 @@ if __name__ == "__main__":
 
     footer = (
         Fore.LIGHTBLACK_EX + Style.DIM +
-        f"(c) 2025 TASKBLADE {Fore.YELLOW}·{Fore.WHITE} zediek. All rights reserved.\n"
+        f"(c) 2025 TASKBLADE {Fore.YELLOW}·{Fore.WHITE} zediek · MIT Licensed · Open Source\n"
     )
-    # footer = f"(c) 2025 TASKBLADE {Fore.YELLOW}·{Style.RESET_ALL} zediek. All rights reserved.\n"
+
     print(footer)
 
 
