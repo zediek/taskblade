@@ -339,3 +339,13 @@ You’re free to use, modify, and distribute with attribution.
 
 - Built with Flask, Bootstrap, and pure threading magic  
 - Inspired by the need for efficient, customizable testing across real-world accounts  
+
+---
+
+## 🙌 Why I Shared This
+
+This project was built out of necessity — I had limited tools but wanted a better workflow for testing APIs across multiple users.
+
+I’m sharing it for free, with no donation links, no paid versions — just as a contribution to the community.
+
+If it helps you, feel free to use or improve it. That’s enough thanks.
