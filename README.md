@@ -302,6 +302,7 @@ Make sure you're inside your virtual environment:
 # Linux/macOS
 source .venv/bin/activate
 
+pip install -r requirements.txt
 pip install --force-reinstall .
 ```
 This will register the taskblade command.
