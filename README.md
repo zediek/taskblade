@@ -279,57 +279,73 @@ Access TASKBLADE through a sleek Flask-based UI with the following tools:
 
 ## 📦 Installation
 
-Clone the repository and install dependencies:
+### Clone the repository:
 
 ```bash
 git clone https://github.com/yourname/taskblade.git
 cd taskblade
-pip install -r requirements.txt
 ```
 
-Then start the web server:
+### ⚙️ Command Line Setup
+Once installed (via .venv or globally), you can use the taskblade command directly from your terminal.
+### ✅ How to Install
+Make sure you're inside your virtual environment:
 
 ```bash
-python server.py
-```
+# Windows
+.venv\Scripts\activate
 
-Visit the app in your browser:
+# Linux/macOS
+source .venv/bin/activate
 
+pip install --force-reinstall .
 ```
-http://localhost:5000
-```
+This will register the taskblade command.
 
 ---
 
-## 🧪 CLI Usage
+## 🖥️ CLI Commands
+After installation, you can run:
 
-You can execute TASKBLADE directly from the terminal using:
+### ▶️ Start the Web Interface
 
 ```bash
-python api_task_runer.py -c your-config.json
+taskblade serve
 ```
+Launches the Flask-based UI.
 
-### 🔧 Options
+### 🚀 Run Tasks from Config
+
+```bash
+taskblade -c your-config.json
+```
+Executes all tasks as defined in your JSON configuration.
+
+#### 🔧 Options
 
 - `-c`, `--config` — Path to your TASKBLADE config file (required)
-
-### 📝 Example
-
-```bash
-python api_task_runer.py -c player-tasks-config.json
-```
 
 This will:
 - Run all defined tasks across user profiles
 - Store API execution logs in the `logs/` folder
 - Save request/response CSV data per profile in the `csv/` folder
 
+### 🧪 Debug
+To check which Python environment is being used:
+
+```bash
+taskblade --debug
+```
+(To implement this, just add a --debug flag in your CLI and print sys.executable.)
+
 ---
 
 ## 🛡 License
 
-TASKBLADE is released under the [MIT License](./LICENSE) by Zediek.  
-You’re free to use, modify, and distribute with attribution.
+**TASKBLADE** is released under the [MIT License](./LICENSE) by Zediek.  
+You are free to use, modify, and distribute it — just keep the original credit.
+
+This is open-source software, provided *as-is* with no warranties.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
