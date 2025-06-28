@@ -28,13 +28,17 @@ It supports structured task definitions with templating, parallel execution per 
 
 ```
 TASKBLADE/
-├── api_task_runer.py       # CLI execute with argparse -c/--config `config.json` file
-├── server.py               # Flask web server
+├── taskblade.py            # Main CLI entry point (called by `taskblade` command)
+├── server.py               # Flask web interface
+├── api_task_runer.py       # CLI task runner (used internally)
+├── setup.cfg               # Package metadata and entry point config
+├── pyproject.toml          # Optional modern Python packaging support
 ├── [anyname]-config.json   # User + Task + Step definitions
 ├── csv/                    # Request/response data in CSV per user
 ├── logs/                   # Execution logs per user
 ├── LICENSE                 # MIT License
-└── README.md               # You're here
+├── README.md               # Project documentation
+└── .venv/                  # (Optional) Virtual environment folder
 ```
 
 ---
@@ -323,7 +327,7 @@ Executes all tasks as defined in your JSON configuration.
 
 #### 🔧 Options
 
-- `-c`, `--config` — Path to your TASKBLADE config file (required)
+- `-c` — Path to your TASKBLADE config file (required)
 
 This will:
 - Run all defined tasks across user profiles
