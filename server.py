@@ -1375,37 +1375,41 @@ HTML_PLAYGROUND_TEMPLATE = """
       "base_url": "http://127.0.0.1",
       "users": [
         {
-          "profiles": [],
+          "profiles": [
+            "Admin:admin@password"
+          ],
           "globals": {},
           "tasks": [
             {
-              "name": "",
+              "name": "Admin Task",
               "steps": [
                 {
-                  "name": "",
+                  "name": "Login",
                   "port": "5000",
-                  "path": "",
-                  "method": "GET",
+                  "path": "login",
+                  "method": "POST",
                   "headers": {
                     "Content-Type": "application/json"
                   },
                   "json": {
-                  
+                    "username": "\{\{ profile.username \}\}",
+                    "password": "\{\{ profile.password \}\}"
                   },
                   "extract": {
-                  
+                    "success": "json.success",
+                    "message": "json.message",
                   },
                   "sets": {
-                  
+                    
                   },
                   "assert": {
                   
                   },
                   "block": {
                     "if": {
-                    
+                      "success": false,
                     },
-                    "reason": ""
+                    "reason": "\{\{ message \}\}"
                   }
                 }
               ]
@@ -2112,7 +2116,25 @@ def elapsed_time():
 
 
 
+# Mock user
+mock_user = {
+    'username': 'admin',
+    'password': 'password'
+}
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'Missing JSON body'}), 400
+
+    username = data.get('username')
+    password = data.get('password')
+
+    if username == mock_user['username'] and password == mock_user['password']:
+        return jsonify({'success': True, 'message': 'Login successful'})
+    else:
+        return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
 
 
 
