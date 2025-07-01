@@ -1392,8 +1392,8 @@ HTML_PLAYGROUND_TEMPLATE = """
                     "Content-Type": "application/json"
                   },
                   "json": {
-                    "username": "\{\{ profile.username \}\}",
-                    "password": "\{\{ profile.password \}\}"
+                    "username": "\\{\\{ profile.username \\}\\}",
+                    "password": "\\{\\{ profile.password \\}\\}"
                   },
                   "extract": {
                     "success": "json.success",
@@ -1409,7 +1409,7 @@ HTML_PLAYGROUND_TEMPLATE = """
                     "if": {
                       "success": false,
                     },
-                    "reason": "\{\{ message \}\}"
+                    "reason": "\\{\\{ message \\}\\}"
                   }
                 }
               ]
