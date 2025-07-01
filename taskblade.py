@@ -1,4 +1,5 @@
 # taskblade.py
+
 import os
 import sys
 import platform
@@ -8,58 +9,68 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        return self_update()
+        return show_help()
 
     cmd = args[0]
+    arg1 = args[1] if len(args) > 1 else None
 
     if cmd == "serve":
         subprocess.run([sys.executable, "server.py"])
 
-    elif cmd == "-c" and len(args) > 1:
-        subprocess.run([sys.executable, "api_task_runer.py", "-c", args[1]])
+    elif cmd == "-c":
+        if not arg1:
+            print("❌ Please provide a config file: taskblade -c your-config.json")
+            return
+        subprocess.run([sys.executable, "api_task_runer.py", "-c", arg1])
 
     elif cmd == "scan":
-        subprocess.run([sys.executable, "port_scanner.py"])  # optional
+        subprocess.run([sys.executable, "port_scanner.py"])
+
+    elif cmd == "check_update":
+        self_update()
+
+    elif cmd == "--debug":
+        print("🧪 Python executable:", sys.executable)
+        print("Platform:", platform.system())
 
     else:
         print(f"❌ Unknown command: {cmd}")
-        return show_help()
+        show_help()
 
 def show_help():
+    print("🗡 TASKBLADE - Multi-user API Task Runner")
     print("Usage:")
-    print("  taskblade serve            # Run the web server")
-    print("  taskblade -c config.json   # Run the task runner")
-    print("  taskblade scan             # Run the port scanner")
-    print("  taskblade                  # Check for updates and refresh packages")
+    print("  taskblade serve              # Run the web server")
+    print("  taskblade -c config.json     # Run tasks via config file")
+    print("  taskblade scan               # Scan local network (optional)")
+    print("  taskblade check_update       # Pull latest changes and update packages")
+    print("  taskblade --debug            # Show current Python executable")
+    print("  taskblade                    # Show this help menu")
 
 def self_update():
     print("🔄 Checking for updates...")
 
-    # Make sure git is available
     if not os.path.isdir(".git"):
-        print("⚠️  This is not a git repository.")
+        print("⚠️  Not a Git repository. Skipping update.")
         return
 
     try:
         subprocess.run(["git", "pull"], check=True)
+        print("✅ Repository updated.")
     except Exception as e:
         print(f"❌ Git pull failed: {e}")
         return
 
     print("📦 Updating .venv packages...")
 
-    pip_path = None
-    if platform.system() == "Windows":
-        pip_path = ".venv\\Scripts\\pip.exe"
-    else:
-        pip_path = ".venv/bin/pip"
+    pip_path = ".venv\\Scripts\\pip.exe" if platform.system() == "Windows" else ".venv/bin/pip"
 
     if not os.path.exists(pip_path):
-        print(f"❌ Could not find pip in .venv: {pip_path}")
+        print(f"❌ Pip not found at: {pip_path}")
         return
 
     try:
         subprocess.run([pip_path, "install", "-r", "requirements.txt"], check=True)
-        print("✅ .venv is now up to date.")
+        print("✅ .venv packages updated.")
     except Exception as e:
         print(f"❌ Package update failed: {e}")
