@@ -97,7 +97,7 @@ class PortScan:
         args = sys.argv[1:]
         if not args:
             print("❌ Error: No ports provided.")
-            print("✅ Usage: python port_scanner.py [80] [22-25] [443] ...")
+            print("✅ Usage: python port_scanner.py [80] [22-25] [443] [5000 8000] ...")
             sys.exit(1)
 
         ports = set()
@@ -111,7 +111,9 @@ class PortScan:
                     sys.exit(1)
             else:
                 try:
-                    ports.add(int(arg))
+                    split_ports = arg.split(" ")
+                    for sp in split_ports:
+                        ports.add(int(sp))
                 except:
                     print(f"⚠️ Invalid port: {arg}")
                     sys.exit(1)

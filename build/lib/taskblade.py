@@ -24,7 +24,7 @@ def main():
         subprocess.run([sys.executable, "api_task_runer.py", "-c", arg1])
 
     elif cmd == "scan":
-        subprocess.run([sys.executable, "port_scanner.py"])
+        subprocess.run([sys.executable, "port_scanner.py", " ".join([args[i] for i in range(len(args)) if i != 0 ])])
 
     elif cmd == "check_update":
         self_update()
@@ -42,7 +42,7 @@ def show_help():
     print("Usage:")
     print("  taskblade serve              # Run the web server")
     print("  taskblade -c config.json     # Run tasks via config file")
-    print("  taskblade scan               # Scan local network (optional)")
+    print("  taskblade scan 80            # Scan local network via port/s (optional)")
     print("  taskblade check_update       # Pull latest changes and update packages")
     print("  taskblade --debug            # Show current Python executable")
     print("  taskblade                    # Show this help menu")
