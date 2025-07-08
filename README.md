@@ -1,4 +1,4 @@
-# 🗡 TASKBLADE
+# 🗡 <span style="color: #dc3545;">TASK</span><span style="color: #0d6efd;">BLADE</span> 🗡 
 
 > **Slice through tasks with surgical precision.**  
 > A multi-threaded, multi-user API task runner with a powerful web interface.
