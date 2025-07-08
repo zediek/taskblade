@@ -70,7 +70,7 @@ Define your users and tasks in a single `config.json` file:
               "json": {
                 "num": "{{ gen_num() }}|int",
                 "key": "{{ gen_key() }}",
-                "text": "{{ num_to_words() }}"
+                "text": "{{ num_to_words(1) }}"
               },
               "data": {},
               "files": {
@@ -104,7 +104,7 @@ You can use the following in your templates:
 - `{{ profile.name }}`, `{{ profile.username }}`, `{{ profile.password }}` — per-profile values  
 - `{{ gen_num() }}` — generate a number  
 - `{{ gen_key() }}` — generate a random key or string  
-- `{{ num_to_words() }}` — convert number to words  
+- `{{ num_to_words(1) }}` — converts a numeric value to its word form (e.g., 42 → "forty-two") 
 - `{{ gen_img() }}` — generate image data for file uploads  
 - `{{ x }}` — dynamic value set from previous steps
 - `{{ y }}` — value extracted from previous responses
