@@ -1011,6 +1011,9 @@ HTML_LOGS_TEMPLATE = """
       if (data && typeof data.total_of_users === 'number' && data.total_of_users !== null) {
         output += `Total of Users: ${data.total_of_users}\n\n`
       }
+      if  (data && typeof data.longest_elapse === 'object' && data.longest_elapse !== null) {
+        output += `[Longest]\nUser: ${data.longest_elapse.user}\nStep: ${data.longest_elapse.step}\n${data.longest_elapse.elapsed_time}\n\n`
+      }
       if (data && typeof data.over_all === 'object' && data.over_all !== null) {
         for (const [step, info] of Object.entries(data.over_all)) {
           output += `[Step: ${step}]\n${info.total_elapsed_time}\n${info.total_average_success_time}\nTotal Successful Responses: ${info.total_success_count}\nTotal Failed/Error Responses: ${info.total_fail_count}\n\n`
@@ -1991,9 +1994,13 @@ def elapsed_time():
     for user, data in elapsed_by_step.items():
         json_data[user] = data
         result["users"][user] = {}
+        result["longest_elapse"] = {
+            "user": None, 
+            "elapsed_time": f"Elapse Time: 0d 0h 0m 0s 0ms",
+        }
 
         
-
+        max_elapsed_ms = -1
         
         for step in json_data[user]:
           td = json_data[user][step]['elapsed_time']
@@ -2008,7 +2015,15 @@ def elapsed_time():
 
           over_all_dir[step]["total_success_count"] += json_data[user][step]['success_count']
           over_all_dir[step]["total_fail_count"] += json_data[user][step]['fail_count']
-          
+
+          if total_ms > max_elapsed_ms:
+            max_elapsed_ms = total_ms
+            result["longest_elapse"] = {
+              "user": user,
+              "step": step,
+              "elapsed_time": f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
+            }
+            
           
           result["users"][user][step] = {
               'elapsed_time': f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
