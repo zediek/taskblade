@@ -319,6 +319,7 @@ class Step:
       files = self.interpolate(self.files)
       
       try:
+          start_datetime = datetime.now()
           response = requests.request(
               method=self.method,
               url=url,
@@ -327,6 +328,7 @@ class Step:
               data=data or None,
               files=files or None,
           )
+          end_datetime = datetime.now()
 
           end = time.perf_counter()
 
@@ -337,6 +339,8 @@ class Step:
           
 
           self.logger.append(f"[Step: {self.name}]")
+          self.logger.append(f"Start Request {start_datetime}")
+          self.logger.append(f"End Request {end_datetime}")
           self.logger.append(f"→ Timestamp: {timestamp} (UTC)")
           self.logger.append(f"→ {self.method} {url}")
           self.logger.append(f"→ Status Code: {response.status_code}")
@@ -999,7 +1003,7 @@ HTML_LOGS_TEMPLATE = """
         for (const [user, info] of Object.entries(data.users)) {
           output += `${user}\n`;
           for (const [step, info2] of Object.entries(info)) {
-            output += `\t[Step: ${step}]\n\t${info2.elapsed_time}\n\t${info2.average_success_time}\n\tSuccessful Responses: ${info2.success_count}\n\tFailed/Error Responses: ${info2.fail_count}\n\n`;
+            output += `\t[Step: ${step}]\n\tStart From First Req: ${info2.start_from_first_request}\n\tEnd From Last Req: ${info2.end_from_last_request}\n\t${info2.elapsed_time}\n\t${info2.average_success_time}\n\tSuccessful Responses: ${info2.success_count}\n\tFailed/Error Responses: ${info2.fail_count}\n\n`;
           }
         }
       }
@@ -1012,7 +1016,7 @@ HTML_LOGS_TEMPLATE = """
         output += `Total of Users: ${data.total_of_users}\n\n`
       }
       if  (data && typeof data.longest_elapse === 'object' && data.longest_elapse !== null) {
-        output += `[Longest]\nUser: ${data.longest_elapse.user}\nStep: ${data.longest_elapse.step}\n${data.longest_elapse.elapsed_time}\n\n`
+        output += `[Longest]\nUser: ${data.longest_elapse.user}\nStep: ${data.longest_elapse.step}\nStart From First Req: ${data.longest_elapse.start_from_first_request}\nEnd From Last Req: ${data.longest_elapse.end_from_last_request}\n${data.longest_elapse.elapsed_time}\n\n`
       }
       if (data && typeof data.over_all === 'object' && data.over_all !== null) {
         for (const [step, info] of Object.entries(data.over_all)) {
@@ -1883,6 +1887,16 @@ def elapsed_time():
             days, hours, minutes, seconds, milliseconds = map(int, match.groups())
             return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds)
         return timedelta(0)
+    
+    def get_start_end_req(line):
+      match = re.search(r"(?:Start Request|End Request) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+)", line)
+      if not match:
+          return None
+
+      dt_str = match.group(1).strip()
+      dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S.%f")
+      millis = int(dt.microsecond / 1000)
+      return dt.strftime(f"%a, %d %b %Y %H:%M:%S.%f")
 
     elapsed_by_step = {}
     current_step = None
@@ -1892,8 +1906,13 @@ def elapsed_time():
     brace_count = 0
     is_success = False
 
+    start_requests = {}
+    end_requests = {}
+
     for key in data:
         elapsed_by_step[key] = {}
+        start_requests[key] = {}
+        end_requests[key] = {}
         for line in data[key].splitlines():
             line = line.strip()
             
@@ -1904,12 +1923,28 @@ def elapsed_time():
             if step_match:
                 current_step = step_match.group(1)
                 if current_step not in elapsed_by_step[key]:
+                    start_requests[key][current_step] = []
+                    end_requests[key][current_step] = []
                     elapsed_by_step[key][current_step] = {
                         'elapsed_time': timedelta(),
+                        'start_from_first_request': None,
+                        'end_from_last_request': None,
                         'success_count': 0,
                         'average_success_time': timedelta(),
                         'fail_count': 0
                     }
+
+            if current_step and 'Start Request' in line:
+              start_requests[key][current_step].append(get_start_end_req(line))
+
+              if len(start_requests[key][current_step]) == 1:
+                elapsed_by_step[key][current_step]['start_from_first_request'] = start_requests[key][current_step][0]
+
+            if current_step and 'End Request' in line:
+              end_requests[key][current_step].append(get_start_end_req(line))
+
+              if len(end_requests[key][current_step]) >= 1:
+                elapsed_by_step[key][current_step]['end_from_last_request'] = end_requests[key][current_step][-1]
 
             # Elapsed time accumulation
             if current_step and 'Elapse Time:' in line:
@@ -1990,17 +2025,12 @@ def elapsed_time():
     
 
     json_data = {}
+    max_elapsed_ms = -1
     
     for user, data in elapsed_by_step.items():
         json_data[user] = data
         result["users"][user] = {}
-        result["longest_elapse"] = {
-            "user": None, 
-            "elapsed_time": f"Elapse Time: 0d 0h 0m 0s 0ms",
-        }
 
-        
-        max_elapsed_ms = -1
         
         for step in json_data[user]:
           td = json_data[user][step]['elapsed_time']
@@ -2022,11 +2052,15 @@ def elapsed_time():
               "user": user,
               "step": step,
               "elapsed_time": f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
+              'start_from_first_request': json_data[user][step]['start_from_first_request'],
+              'end_from_last_request': json_data[user][step]['end_from_last_request'],
             }
             
           
           result["users"][user][step] = {
               'elapsed_time': f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
+              'start_from_first_request': json_data[user][step]['start_from_first_request'],
+              'end_from_last_request': json_data[user][step]['end_from_last_request'],
               'success_count': json_data[user][step]['success_count'],
               'average_success_time': None,
               'fail_count': json_data[user][step]['fail_count']
