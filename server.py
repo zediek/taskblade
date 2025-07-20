@@ -1895,7 +1895,7 @@ def elapsed_time():
 
       dt_str = match.group(1).strip()
       dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S.%f")
-      millis = int(dt.microsecond / 1000)
+      # millis = int(dt.microsecond / 1000)
       return dt.strftime(f"%a, %d %b %Y %H:%M:%S.%f")
 
     elapsed_by_step = {}
@@ -2116,49 +2116,6 @@ def elapsed_time():
           seconds, milliseconds = divmod(rem, 1000)
 
           result["over_all"][step]["total_average_success_time"] = f"Total Average Success Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms"
-    
-
-
-    #     over_all_dir[step]["total_elapse_time"] += json_data[step]["total_elapse_time"]
-    #     over_all_dir[step]["total_average_success_time"] += json_data[step]["total_average_success_time"]
-    #     over_all_dir[step]["total_success_count"] += json_data[step]["total_success_count"]
-    #     over_all_dir[step]["total_fail_count"] += json_data[step]["total_fail_count"]
-
-      # print(over_all_dir)
-            
-
-          
-    
-    # ttd = total_elapse_time
-    # total_ms = int(ttd.total_seconds() * 1000)
-    # days, rem = divmod(total_ms, 86400000)
-    # hours, rem = divmod(rem, 3600000)
-    # minutes, rem = divmod(rem, 60000)
-    # seconds, milliseconds = divmod(rem, 1000)
-
-     
-    
-        # "total_elapsed_time": f"Total Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
-        # "total_success_count": None,
-        # "total_average_success_time": None,
-        # "total_fail_count": None
-    
-    
-    
-    
-
-    # total_average_seconds = total_average_success_time.total_seconds() / result["over_all"]["total_success_count"]
-    # average = timedelta(seconds=total_average_seconds)
-    # total_ms = int(average.total_seconds() * 1000)
-    # days, rem = divmod(total_ms, 86400000)
-    # hours, rem = divmod(rem, 3600000)
-    # minutes, rem = divmod(rem, 60000)
-    # seconds, milliseconds = divmod(rem, 1000)
-
-    # result["over_all"]["total_average_success_time"] = f"Total Average Success Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms"
-        
-
-    # print(result)
     
     return jsonify(result)
 
