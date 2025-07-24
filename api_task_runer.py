@@ -151,7 +151,6 @@ class Step:
                             return random.choices(population=l, k=1)
                         except:
                             return None
-
                     context["rpick"] = rpick
                 elif "num_to_words" in raw:
                     def num_to_words(n:str):

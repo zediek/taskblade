@@ -168,6 +168,13 @@ class Step:
                     context["gen_num"] = lambda: random.randint(0, 9)
                 elif "gen_img()" in raw:
                     context["gen_img"] = lambda: self.gen_img.run()
+                elif "rpick" in raw:
+                    def rpick(l:list):
+                        try:
+                            return random.choices(population=l, k=1)
+                        except:
+                            return None
+                    context["rpick"] = rpick
                 elif "num_to_words" in raw:
                     def num_to_words(n):
                         try:
