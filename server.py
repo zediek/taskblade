@@ -2169,7 +2169,7 @@ def users():
   auth_token = request.headers.get('Authentication')  # safer than direct indexing
 
   if auth_token and any(s['token'] == auth_token for s in mock_user_sessions):
-    return jsonify({"message": "Authenticated request", "token": auth_token})
+    return jsonify({"users": [{"id": user['id'],"username": user['username']} for user in mock_users]})
   else:
     return jsonify({"message": "Missing authentication header"}), 401
 
