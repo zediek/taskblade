@@ -2123,24 +2123,48 @@ def elapsed_time():
 
 
 # Mock user
-mock_user = {
-    'username': 'admin',
-    'password': 'password'
-}
+mock_users = [
+    {'id': 1, 'username': 'admin', 'password': 'password'},
+    {'id': 2, 'username': 'user1', 'password': 'password'}
+]
+
+mock_user_sessions = []
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'message': 'Missing JSON body'}), 400
+  data = request.get_json()
+  if not data:
+    return jsonify({'success': False, 'message': 'Missing JSON body'}), 400
 
-    username = data.get('username')
-    password = data.get('password')
+  username = data.get('username')
+  password = data.get('password')
 
-    if username == mock_user['username'] and password == mock_user['password']:
-        return jsonify({'success': True, 'message': 'Login successful'})
-    else:
-        return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+  for user in mock_users:
+    if user['username'] == username and user['password'] == password:
+      # Check if session already exists
+      if any(s['user_id'] == user['id'] for s in mock_user_sessions):
+        return jsonify({'success': False, 'message': 'User already logged in'}), 403
+
+      # Create new session
+      token = uuid.uuid4().hex
+      mock_user_sessions.append({
+        'id': len(mock_user_sessions) + 1,
+        'user_id': user['id'],
+        'token': token
+      })
+      return jsonify({'success': True, 'message': 'Login successful', 'token': token})
+
+  return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+
+
+@app.route('/users', methods=['GET'])
+def users():
+  auth_token = request.headers.get('Authentication')  # safer than direct indexing
+
+  if auth_token and any(s['token'] == auth_token for s in mock_user_sessions):
+    return jsonify({"message": "Authenticated request", "token": auth_token})
+  else:
+    return jsonify({"message": "Missing authentication header"}), 401
 
 
 
