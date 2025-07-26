@@ -635,6 +635,248 @@ app = Flask(__name__)
 
 
 
+STYLE_CSS = """
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap');
+
+body {
+  background-color: black;
+  margin: 0;
+  font-family: 'Anton', Impact, sans-serif;
+  overflow: hidden;
+}
+
+.p5-container {
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.menu-button {
+  position: relative;
+  font-size: 32px;
+  color: white;
+  background-color: red;
+  border: none;
+  padding: 20px 50px;
+  clip-path: polygon(0% 0%, 95% 0%, 100% 100%, 5% 100%);
+  box-shadow: 5px 5px 0 white;
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
+}
+
+.menu-button:hover {
+  transform: translateX(10px) rotate(-1deg);
+  background-color: yellow;
+  color: black;
+}
+
+.menu-button::before {
+  content: '▶';
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 28px;
+  color: red;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.menu-button:hover::before {
+  opacity: 1;
+}
+
+/* Subtle Persona 5 Navbar */
+.navbar {
+  background-color: black;
+  padding: 12px 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 4px 0 red;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-block;
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: 16px;
+  color: white;
+  background-color: red;
+  padding: 10px 20px;
+  clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%);
+  box-shadow: 2px 2px 0 white;
+  border: none;
+  text-decoration: none;
+  transition: transform 0.15s ease-in-out, background-color 0.2s;
+}
+
+.nav-link:hover {
+  transform: translateX(4px) rotate(-1deg);
+  background-color: yellow;
+  color: black;
+}
+
+.nav-link::before {
+  content: '▶';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: red;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.nav-link:hover::before {
+  opacity: 1;
+}
+
+.p5-card {
+    font-family: 'Archivo Black', sans-serif;
+    background: linear-gradient(145deg, #d40000, #9c0000);
+    color: white;
+    border: 4px solid #000;
+    border-radius: 12px;
+    box-shadow:
+      6px 6px 0 #000,
+      0 0 10px rgba(0, 0, 0, 0.5);
+    padding: 0;
+    /*max-width: 320px;*/
+    margin: 2rem auto;
+    transform: rotate(-1.5deg);
+    overflow: hidden;
+  }
+
+  .p5-card-header {
+    background: white;
+    padding: 10px 15px;
+    border-bottom: 3px solid black;
+    transform: rotate(-2deg);
+  }
+
+  .p5-title {
+    margin: 0;
+    font-size: 1.6rem;
+    color: black;
+    text-shadow: 2px 2px #d40000;
+  }
+
+  .p5-card-body {
+    padding: 15px;
+    font-size: 1rem;
+    line-height: 1.4;
+    background: #9c0000;
+  }
+
+  .p5-btn {
+    margin-top: 10px;
+    background: black;
+    color: #fff;
+    border: 2px solid white;
+    padding: 10px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0 #fff;
+    transition: 0.1s transform ease;
+  }
+
+  .p5-btn:hover {
+    transform: scale(1.05);
+    background: #fff;
+    color: #000;
+    box-shadow: 3px 3px 0 #000;
+  }
+
+  .p5-label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.p5-input {
+  width: 100%;
+  padding: 10px;
+  font-family: 'Archivo Black', sans-serif;
+  border: 2px solid white;
+  border-radius: 4px;
+  background: black;
+  color: white;
+  font-size: 1rem;
+  box-shadow: inset 2px 2px 0 #d40000, 2px 2px 0 #000;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.p5-input::placeholder {
+  color: #ccc;
+  font-style: italic;
+}
+
+.p5-input:focus {
+  border-color: yellow;
+  box-shadow: inset 2px 2px 0 yellow, 2px 2px 0 #000;
+}
+
+.p5-table-wrapper {
+  background-color: black;
+  border: 4px solid red;
+  box-shadow: 6px 6px 0 white;
+  padding: 16px;
+  margin: 30px auto;
+  max-width: 90%;
+  max-height: 450px;
+  overflow: auto;
+  font-family: 'Anton', Impact, sans-serif;
+}
+
+/* Style the actual DataFrame table */
+.p5-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.p5-table th,
+.p5-table td {
+  border: 2px solid white;
+  padding: 10px;
+  text-align: center;
+  background-color: #111;
+  color: white;
+}
+
+.p5-table th {
+  background-color: red;
+  color: black;
+  text-transform: uppercase;
+}
+
+.p5-outlined-text {
+  color: white; /* inner fill */
+  font-weight: bold;
+  -webkit-text-stroke: 1.5px black; /* outer stroke */
+  text-shadow:
+    -1px -1px 0 black,
+     1px -1px 0 black,
+    -1px  1px 0 black,
+     1px  1px 0 black;
+}
+
+
+"""
+
+
+
 HTML_INDEX_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -642,9 +884,7 @@ HTML_INDEX_TEMPLATE = """
   <meta charset="UTF-8">
   <title>Welcome to Universal Test App</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: monospace; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('style_css') }}">
 </head>
 <body class="bg-dark text-light">
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -656,7 +896,7 @@ HTML_INDEX_TEMPLATE = """
       </a>
       <div class="navbar-collapse">
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scannerr</a></li>
+          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scanner</a></li>
           <li class="nav-item"><a class="nav-link" href="/csvs">CSV Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/logs">Logs Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/playground">Playground</a></li>
@@ -665,11 +905,11 @@ HTML_INDEX_TEMPLATE = """
     </div>
   </nav>
 
-  <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center">
+  <div class="p5-card d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center p-5 mt-5">
 
     <!-- Logo Section -->
-    <div class="text-center my-4">
-      <h1 style="font-family: 'Courier New', monospace; font-weight: bold; font-size: 3rem; letter-spacing: 2px;">
+    <div class="p5-card-header my-4">
+      <h1 style="font-family: 'Courier New', monospace; font-weight: bold; font-size: 3rem; letter-spacing: 2px;" class="p5-title">
         🗡 <span style="color: #dc3545;">TASK</span><span style="color: #0d6efd;">BLADE</span> 🗡
       </h1>
       <p class="lead" style="font-style: italic; color: #adb5bd;">
@@ -678,15 +918,17 @@ HTML_INDEX_TEMPLATE = """
     </div>
 
     <!-- Welcome + Description -->
-    <h2 class="mb-3 text-light">Welcome to TASKBLADE</h2>
-    <p class="lead mb-4 text-light">
-      TASKBLADE is a precision-built tool for running and monitoring automated API tasks across multiple user profiles.  
-      Use the CSV Viewer to inspect your input sets, explore detailed execution logs, test endpoints live in the Playground,  
-      or scan your local network with the Port Scanner to detect open ports and connected devices.
-    </p>
+    <div class="p5-card-body">
+      <h2 class="mb-3 text-light">Welcome to TASKBLADE</h2>
+      <p class="lead mb-4 text-light">
+        TASKBLADE is a precision-built tool for running and monitoring automated API tasks across multiple user profiles.  
+        Use the CSV Viewer to inspect your input sets, explore detailed execution logs, test endpoints live in the Playground,  
+        or scan your local network with the Port Scanner to detect open ports and connected devices.
+      </p>
 
-    <!-- CTA Button -->
-    <a href="/playground" class="btn btn-primary btn-lg">Get Started</a>
+      <!-- CTA Button -->
+      <a href="/playground" class="btn menu-button btn-lg">Get Started</a>
+    </div>
   </div>
 
 </body>
@@ -706,9 +948,7 @@ PORT_SCAN_TEMPLATE = """
     <title>Advanced Port Scanner</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-    body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: monospace; }
-  </style>
+   <link rel="stylesheet" href="{{ url_for('style_css') }}">
 </head>
 <body class="bg-dark text-light">
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -720,7 +960,7 @@ PORT_SCAN_TEMPLATE = """
       </a>
       <div class="navbar-collapse">
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scannerr</a></li>
+          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scanner</a></li>
           <li class="nav-item"><a class="nav-link" href="/csvs">CSV Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/logs">Logs Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/playground">Playground</a></li>
@@ -729,44 +969,47 @@ PORT_SCAN_TEMPLATE = """
     </div>
   </nav>
 
-<div class="container py-4">
-    <h1 class="mb-4">🔍 Advanced Port Scanner</h1>
-    <form method="post" class="card p-4 shadow-sm">
-        <div class="mb-3">
-            <label class="form-label">Host Range:</label>
-            <input type="text" class="form-control" name="host_range" placeholder="e.g. 192.168.1.1-192.168.1.10 or host1.local-host5.local or 192.168.1.0/24" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Ports:</label>
-            <input type="text" class="form-control" name="ports" placeholder="e.g. 80,443,8080" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Scan</button>
-    </form>
+<div class="container-fluid py-4">
+  <div class="p5-card">
+    <div class="p5-card-header">
+      <h1 class="p5-title">🔍 Advanced Port Scanner</h1>
+    </div>
+    <div class="p5-card-body">
+      <form method="post" class="p-4 shadow-sm">
+          <div class="mb-3">
+              <label class="p5-label">Host Range:</label>
+              <input type="text" class="p5-input" name="host_range" placeholder="e.g. 192.168.1.1-192.168.1.10 or host1.local-host5.local or 192.168.1.0/24" required>
+          </div>
+          <div class="mb-3">
+              <label class="p5-label">Ports:</label>
+              <input type="text" class="p5-input" name="ports" placeholder="e.g. 80,443,8080" required>
+          </div>
+          <button type="submit" class="p5-btn">Scan</button>
+      </form>
 
-    {% if results %}
-        <div class="mt-5">
-            <h2 class="mb-3">📊 Scan Results</h2>
-            <ul class="list-group">
-                {% for host, data in results.items() %}
-                    <li class="list-group-item">
-                        {% set ip = host.split('(')[-1].rstrip(')') %}
-                        <strong>{{ ip }}</strong>
-                        {% if data.hostname %} ({{ data.hostname }}){% endif %}
-                        {% if data.mac %} [MAC: {{ data.mac }}]{% endif %}
-                        {% if data.ports %}
-                            → Open ports: <span class="text-success">{{ data.ports }}</span>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+      {% if results %}
+              <h2 class="mb-3 p5-title">📊 Scan Results</h2>
+              <ul class="list-group">
+                  {% for host, data in results.items() %}
+                      <li class="list-group-item">
+                          {% set ip = host.split('(')[-1].rstrip(')') %}
+                          <strong>{{ ip }}</strong>
+                          {% if data.hostname %} ({{ data.hostname }}){% endif %}
+                          {% if data.mac %} [MAC: {{ data.mac }}]{% endif %}
+                          {% if data.ports %}
+                              → Open ports: <span class="text-success">{{ data.ports }}</span>
+                          {% endif %}
+                      </li>
+                  {% endfor %}
+              </ul>
 
-        <div class="mt-4">
-            <h5>⬇️ Download Results</h5>
-            <a href="/port-scan/download/json" class="btn btn-outline-secondary btn-sm me-2">Download JSON</a>
-            <a href="/port-scan/download/csv" class="btn btn-outline-secondary btn-sm">Download CSV</a>
-        </div>
-    {% endif %}
+          <div class="mt-4">
+              <h5>⬇️ Download Results</h5>
+              <a href="/port-scan/download/json" class="btn p5-btn btn-sm me-2">Download JSON</a>
+              <a href="/port-scan/download/csv" class="btn p5-btn btn-sm">Download CSV</a>
+          </div>
+      {% endif %}
+    </div>
 </div>
 </body>
 </html>
@@ -782,12 +1025,8 @@ HTML_READER_TEMPLATE = """
     <title>CSV Viewer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('style_css') }}">
     <style>
-        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: monospace; }
-        .my-table {
-            width: 100%;
-            table-layout: fixed;
-        }
         .my-table th, .my-table td {
           border: 1px solid #ddd;
             padding: 8px;
@@ -812,7 +1051,7 @@ HTML_READER_TEMPLATE = """
       </a>
       <div class="navbar-collapse">
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scannerr</a></li>
+          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scanner</a></li>
           <li class="nav-item"><a class="nav-link" href="/csvs">CSV Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/logs">Logs Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/playground">Playground</a></li>
@@ -822,15 +1061,22 @@ HTML_READER_TEMPLATE = """
   </nav>
 
   <div class="container-fluid">
-    <h2>Uploaded Report for: {{ name }}</h2>
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".csv">
-        <input type="hidden" name="filter_asserts" id="filter_asserts" value="{ '1' if filter_asserts else '0' }">
-        <button type="submit">Upload</button>
-        <button type="button" onclick="toggleFilter()">Upload (Assert Filter)</button>
-    </form>
+    <div class="p5-card">
+      <div class="p5-card-header">
+        <h2 class="p5-title">Uploaded Report for: {{ name }}</h2>
+      </div>
+      <div class="p5-card-body mt-5">
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="file" class="p5-input" accept=".csv">
+            <input type="hidden" name="filter_asserts" id="filter_asserts" class="p5-input" value="{ '1' if filter_asserts else '0' }">
+            <button type="submit" class="p5-btn">Upload</button>
+            <button type="button" class="p5-btn" onclick="toggleFilter() ">Upload (Assert Filter)</button>
+        </form>
+      </div>
     <hr>
-    {{ table|safe }}
+    <div class="p5-table-wrapper">
+      {{ table|safe }}
+    </div>
   </div>
     
     <script>
@@ -856,8 +1102,8 @@ HTML_LOGS_TEMPLATE = """
   <meta charset="UTF-8">
   <title>Logs Viewer</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link rel="stylesheet" href="{{ url_for('style_css') }}">
   <style>
-    body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: monospace; }
     pre {
       background-color: #1e1e1e;
       color: #f8f9fa;
@@ -890,7 +1136,7 @@ HTML_LOGS_TEMPLATE = """
       </a>
       <div class="navbar-collapse">
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scannerr</a></li>
+          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scanner</a></li>
           <li class="nav-item"><a class="nav-link" href="/csvs">CSV Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/logs">Logs Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/playground">Playground</a></li>
@@ -903,30 +1149,30 @@ HTML_LOGS_TEMPLATE = """
     <h1 class="mb-1">Logs Viewer</h1>
 
     
-    <div class="card bg-dark p-0">
-      <div class="card-header">
-        <h5 class="text-light">Log Dir Viewer</h5>
+    <div class="p5-card bg-dark p-0">
+      <div class="p5-card-header">
+        <h5 class="p5-title">Log Dir Viewer</h5>
       </div>
-      <div class="card-body">
+      <div class="p5-card-body mt-3">
 
         <div class="row">
           <div class="col-md-6 p-1">
-            <label for="logSelect" class="form-label">Select Log File:</label>
-            <select class="form-select" id="logSelect"></select>
+            <label for="logSelect" class="p5-label">Select Log File:</label>
+            <select class="p5-input" id="logSelect"></select>
           </div>
           <div class="col-md-2 d-flex align-items-end p-1">
-            <button class="btn btn-primary w-100" onclick="loadLog()">View Logs</button>
+            <button class="btn p5-btn w-100" onclick="loadLog()">View Logs</button>
           </div>
         </div>
 
         <div class="row h-100">
-          <div class="col-lg-8 col-md-12 col-sm-12 p-1" style="height: 40vh;">
+          <div class="col-lg-8 col-md-12 col-sm-12 p-1" style="height: 35vh;">
             <pre id="logContent" class="h-100">Select a log dir to view files its contents...</pre>
           </div>
-          <div class="col-lg-4 col-md-12 col-sm-12 p-1" style="height: 40vh;">
+          <div class="col-lg-4 col-md-12 col-sm-12 p-1" style="height: 35vh;">
             <div id="elapsedTimeDisplay" class="text-light h-100"></div>
           </div>
-          <div class="col-lg-12 col-md-12 col-sm-12 p-1" style="height: 30vh;">
+          <div class="col-lg-12 col-md-12 col-sm-12 p-1" style="height: 25vh;">
             <div id="overAll" class="text-light h-100"></div>
           </div>
         </div>
@@ -1060,6 +1306,7 @@ HTML_PLAYGROUND_TEMPLATE = """
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/blockly/blockly.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.js"></script>
+  <link rel="stylesheet" href="{{ url_for('style_css') }}">
   <style>
     body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: monospace; }
     #topBar {
@@ -1125,7 +1372,7 @@ HTML_PLAYGROUND_TEMPLATE = """
       </a>
       <div class="navbar-collapse">
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scannerr</a></li>
+          <li class="nav-item"><a class="nav-link" href="/port-scan">Advance Port Scanner</a></li>
           <li class="nav-item"><a class="nav-link" href="/csvs">CSV Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/logs">Logs Viewer</a></li>
           <li class="nav-item"><a class="nav-link" href="/playground">Playground</a></li>
@@ -1135,25 +1382,28 @@ HTML_PLAYGROUND_TEMPLATE = """
   </nav>
 
   <div class="container-fluid" id="topBar">
-    <button onclick="downloadJSON()">Download JSON</button>
-    <input type="file" id="fileInput" onchange="uploadJSON()" accept=".json" />
-    <button onclick="runJSON()">Run</button>
+    <button onclick="downloadJSON()" class="p5-btn">Download JSON</button>
+    <input type="file" id="fileInput" class="p5-input" onchange="uploadJSON()" accept=".json" />
+    <button class="p5-btn" onclick="runJSON()">Run</button>
   </div>
 
   <div id="blocklyEditor">
-    <div id="blocklyDiv"></div>
-    <div id="editorDiv">
-      <div id="jsonOutputLabel">Edit JSON here (syncs to blocks):</div>
+    <div id="blocklyDiv" class="p5-card p-1"></div>
+    <div id="editorDiv" class="p5-card mt-1">
+      <div id="p5-title">Edit JSON here (syncs to blocks):</div>
       <div id="aceEditor"></div>
     </div>
   </div>
 
   <div class="container-fluid">
-    <div class="row log-content h-100">
-      <div class="col-12 h-100">
-        <div class="log-label mt-2">Logs:</div>
-        <pre id="logContent" class="mt-2"></pre>
+  <div class="p5-card">
+    <div class="p5-card-header">
+        <h5 class="p5-title mt-0">Logs:</h5>
       </div>
+    <div class="p5-card-body h-100">
+        <pre id="logContent" class="mt-4"></pre>
+
+    </div>
     </div>
   </div>
 
@@ -1725,6 +1975,13 @@ def expand_targets(host_input):
 
 
 
+from flask import Response
+
+@app.route("/style.css")
+def style_css():
+    return Response(STYLE_CSS, mimetype="text/css")
+
+
 @app.route('/port-scan', methods=['GET', 'POST'])
 def port_scanner():
     global last_scan_results
@@ -1766,7 +2023,7 @@ def port_scanner():
             results = {f"Error: {str(e)}": {"ports": [], "hostname": None, "mac": None}}
 
     last_scan_results = results
-    return render_template_string(PORT_SCAN_TEMPLATE, results=results)
+    return render_template_string(PORT_SCAN_TEMPLATE, results=results,STYLE_CSS=STYLE_CSS)
 
 @app.route('/port-scan/download/json')
 def download_json():
