@@ -451,6 +451,7 @@ class Task:
       self.name = config.get("name", "Unnamed Task")
       self.globals = globals
       self.loop = config.get("loop", 1)
+      self.wait = config.get("wait", 0)
       self.steps_config = config.get("steps", [])
       self.user_name = user_name
       self.base_url = base_url
@@ -477,6 +478,7 @@ class Task:
       }
 
       for _ in range(self.loop):
+          time.sleep(self.wait)
           for step_conf in self.steps_config:
               step = Step(step_conf, self.globals, self.context, self.extract_keys, self.set_keys, self.logger, self.base_url, self.response_list, self.is_success, self.is_block_error)
               step.run()
@@ -1227,6 +1229,9 @@ HTML_PLAYGROUND_TEMPLATE = """
         this.appendDummyInput()
             .appendField("Task loop")
             .appendField(new Blockly.FieldNumber(1), "LOOP");
+        this.appendDummyInput()
+            .appendField("Task wait")
+            .appendField(new Blockly.FieldNumber(0), "WAIT");
         this.appendStatementInput("STEPS")
             .setCheck("step_block")
             .appendField("Steps");
@@ -1239,7 +1244,7 @@ HTML_PLAYGROUND_TEMPLATE = """
     Blockly.Blocks['step_block'] = {
       init: function() {
         this.appendDummyInput().appendField("Step name").appendField(new Blockly.FieldTextInput(""), "NAME");
-        this.appendDummyInput().appendField("Port").appendField(new Blockly.FieldTextInput(":80"), "PORT");
+        this.appendDummyInput().appendField("Port").appendField(new Blockly.FieldTextInput("80"), "PORT");
         this.appendDummyInput().appendField("Path").appendField(new Blockly.FieldTextInput("/api/path"), "PATH");
         this.appendDummyInput().appendField("Method").appendField(new Blockly.FieldDropdown([
           ["GET", "GET"], ["POST", "POST"], ["PUT", "PUT"], ["DELETE", "DELETE"]
@@ -1320,6 +1325,7 @@ HTML_PLAYGROUND_TEMPLATE = """
           return {
             name: block.getFieldValue("NAME"),
             loop: block.getFieldValue("LOOP"),
+            wait: block.getFieldValue("WAIT"),
             steps: generateStatementJSON(block, "STEPS")
           };
         case "step_block":
@@ -1396,6 +1402,8 @@ HTML_PLAYGROUND_TEMPLATE = """
           "tasks": [
             {
               "name": "Admin Task",
+              "loop": 1,
+              "wait": 0,
               "steps": [
                 {
                   "name": "Login",
@@ -1508,6 +1516,7 @@ HTML_PLAYGROUND_TEMPLATE = """
     }
 
     function createTaskBlock(data) {
+    console.log(data)
       const task = workspace.newBlock("task_block");
       task.setFieldValue(data.name || "", "NAME");
       
@@ -1517,6 +1526,13 @@ HTML_PLAYGROUND_TEMPLATE = """
         loopValue = 1; // default fallback
       }
       task.setFieldValue(loopValue, "LOOP");
+
+      let waitValue = Number(data.wait);
+      if (!Number.isFinite(waitValue) || waitValue < 0 || waitValue > 86400) {
+        waitValue = 0;
+      }
+
+      task.setFieldValue(waitValue, "WAIT");
 
       const stepBlocks = (data.steps || []).map(createStepBlock);
       connectBlocksChain(stepBlocks, task.getInput("STEPS"));
@@ -2162,6 +2178,21 @@ def login():
       return jsonify({'success': True, 'message': 'Login successful', 'token': token})
 
   return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+
+
+@app.route('/logout', methods=['GET'])
+def logout():
+  auth_token = request.headers.get('Authentication')  # safer than direct indexing
+
+  
+  for i, s in enumerate(mock_user_sessions):
+    if auth_token and s['token'] == auth_token:
+      mock_user_sessions.pop(i)
+
+      return jsonify({"message": "Logout Success!"})
+
+  return jsonify({"message": "Missing authentication header"}), 401
+    
 
 
 @app.route('/users', methods=['GET'])
