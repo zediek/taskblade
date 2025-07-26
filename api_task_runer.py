@@ -466,6 +466,7 @@ class Task:
         self.code = code
         self.name = config.get("name", "Unnamed Task")
         self.loop = config.get("loop", 1)
+        self.wait = config.get("wait", 0)
         self.steps_config = config.get("steps", [])
         self.user_name = user_name
         self.base_url = base_url
@@ -518,6 +519,7 @@ class Task:
             }
 
             for _ in range(self.loop):
+                time.sleep(self.wait)
                 for step_conf in self.steps_config:
                     if len(self.is_block_error) == 0:
                         step = Step(step_conf, self.globals, self.context, self.extract_keys, self.set_keys, logger_file, writer, self.base_url, self.response_list, self.is_success, self.is_block_error)
