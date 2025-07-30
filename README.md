@@ -72,6 +72,8 @@ Define your users and tasks in a single `config.json` file:
               "json": {
                 "num": "{{ gen_num() }}|int",
                 "key": "{{ gen_key() }}",
+                "date_today": "{{ rdate() }}",
+                "set_date": "{{ rdate(2025-07-30) }}",
                 "random_choice": "{{ rpick([1,2,3,4,5]) }}",
                 "text": "{{ num_to_words(1) }}"
                 
@@ -108,6 +110,7 @@ You can use the following in your templates:
 - `{{ profile.name }}`, `{{ profile.username }}`, `{{ profile.password }}` — per-profile values  
 - `{{ gen_num() }}` — generate a number  
 - `{{ gen_key() }}` — generate a random key or string
+- `{{ rdate() }}` or `{{ rdate(2025-07-30) }}` — set date or get today's date
 - `{{ rpick([1,2,3,4,5]) }}` — randomly pick data inside list
 - `{{ num_to_words(1) }}` — converts a numeric value to its word form (e.g., 42 → "forty-two") 
 - `{{ gen_img() }}` — generate image data for file uploads  

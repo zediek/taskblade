@@ -145,6 +145,15 @@ class Step:
                     context["gen_num"] = lambda: random.randint(0, 9)
                 elif "gen_img()" in raw:
                     context["gen_img"] = lambda: self.gen_img.run()
+                elif "rdate" in raw:
+                    def rdate(d:str=None):
+                        try:
+                            if d == None:
+                                d = str(datetime.now().date())
+                            return datetime.strptime(d, "%Y-%m-%d").strftime("%Y-%m-%d")
+                        except:
+                            return None
+                    context["rdate"] = rdate
                 elif "rpick" in raw:
                     def rpick(l:list):
                         try:
