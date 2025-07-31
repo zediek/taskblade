@@ -139,7 +139,7 @@ class Step:
                         return rendered
                 except Exception as err:
                     msg = str(err)
-                    print(f"[ERROR] Failed to render '{raw_part}' as {data_type}: {msg}")
+                    self.logger.append(f"[ERROR] Failed to render '{raw_part}' as {data_type}: {msg}")
 
                     # Try to extract undefined variable name from error message
                     if "' is undefined" in msg:
@@ -152,9 +152,9 @@ class Step:
                                     final_change = raw_part.replace(var_name, candidates[0])
                                     return self.interpolate(f"{final_change}|{data_type}")
                             except EOFError:
-                                print("[WARNING] Cannot prompt in non-interactive mode.")
+                                self.logger.append("[WARNING] Cannot prompt in non-interactive mode.")
                         else:
-                            print(f"[SUGGESTION] No close match found for '{var_name}'")
+                            self.logger.append(f"[SUGGESTION] No close match found for '{var_name}'")
 
                     return None
                 
@@ -204,12 +204,12 @@ class Step:
                             image_data = base64.b64decode(result["image_data"])
                             return (filename, io.BytesIO(image_data), mime_type)
                         except Exception as e:
-                            print("Failed to parse gen_img result:", e)
+                            self.logger.append("Failed to parse gen_img result:", e)
                             return None
                     else:
                         return rendered
                 except Exception as e:
-                    print(f"[ERROR] Failed to render '{raw}': {e}")
+                    self.logger.append(f"[ERROR] Failed to render '{raw}': {e}")
                     return None
         else:
             return raw
@@ -229,7 +229,7 @@ class Step:
 
     for key, val in sets.items():
         fin_val = self.interpolate(val)
-        print(f"[DEBUG] Set variable {key} → {fin_val}")
+        self.logger.append(f"[DEBUG] Set variable {key} → {fin_val}")
         self.context[key] = fin_val
 
   def extract_values(self, response):
@@ -486,8 +486,8 @@ class Task:
           "num_of_blocked_error": None
       }
 
-      for _ in range(self.loop):
-          time.sleep(self.wait)
+      for loop in range(self.loop):
+          time.sleep(self.wait if loop > 0 else 0)
           for step_conf in self.steps_config:
               step = Step(step_conf, self.globals, self.context, self.extract_keys, self.set_keys, self.logger, self.base_url, self.response_list, self.is_success, self.is_block_error)
               step.run()

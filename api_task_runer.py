@@ -527,8 +527,8 @@ class Task:
                 "num_of_blocked_error": None
             }
 
-            for _ in range(self.loop):
-                time.sleep(self.wait)
+            for loop in range(self.loop):
+                time.sleep(self.wait if loop > 0 else 0)
                 for step_conf in self.steps_config:
                     if len(self.is_block_error) == 0:
                         step = Step(step_conf, self.globals, self.context, self.extract_keys, self.set_keys, logger_file, writer, self.base_url, self.response_list, self.is_success, self.is_block_error)
