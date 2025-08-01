@@ -2,6 +2,7 @@ import copy
 import difflib
 import glob
 import json
+import math
 import os
 from flask import Flask, Response, jsonify, request, render_template_string, send_file
 import pandas as pd
@@ -23,8 +24,8 @@ from queue import Queue
 from jinja2 import Environment, StrictUndefined, Template as JinjaTemplate
 from datetime import datetime, timezone, timedelta
 import uuid
-from PIL import Image
-import io
+from PIL import Image, ImageDraw, ImageFont, ImageOps
+from io import BytesIO  # ✅ Needed for in-memory file
 from num2words import num2words
 import socket
 import ipaddress
@@ -48,25 +49,73 @@ import subprocess
 
 
 
-
 class GenIMG:
-  def run(self):
-    def gen():
-      img = Image.new("RGB", (1024, 720), color=(
-          random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-      img_byte_arr = io.BytesIO()
-      img.save(img_byte_arr, format="JPEG")
-      img_byte_arr.seek(0)
-      return img_byte_arr
+    def run(self):
+        def gen():
+            width, height = 1024, 720
+            img = Image.new("RGB", (width, height), color="red")
+            draw = ImageDraw.Draw(img)
 
-    image_data = gen()
-    encoded_data = base64.b64encode(image_data.getvalue()).decode("utf-8")
+            # Persona-style concentric rings
+            cx, cy = width // 2, height // 2
+            max_radius = int((width**2 + height**2)**0.5)
+            red_width = 100
+            black_width = 30
+            radius = max_radius
+            while radius > 0:
+                draw.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], fill="black")
+                radius -= black_width
+                if radius <= 0:
+                    break
+                draw.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], fill="red")
+                radius -= red_width
 
-    return json.dumps({
-      "filename": "test.jpg",
-      "mime_type": "image/jpeg",
-      "image_data": encoded_data
-    })  # Note: returns JSON string
+            # Text setup
+            text = "TAKE YOUR HEART"
+            font_size = 60
+            try:
+                font = ImageFont.truetype("arialbd.ttf", font_size)
+            except:
+                font = ImageFont.load_default()
+
+            spacing = 1
+            total_width = sum(draw.textbbox((0, 0), c, font=font)[2] + spacing for c in text if c != " ") - spacing
+            x = (width - total_width) // 2
+            y = height // 2
+
+            # Function to draw outlined text
+            def draw_text_with_outline(draw, pos, text, font, stroke_width=5, fill="black", stroke_fill="white"):
+                x, y = pos
+                for dx in range(-stroke_width, stroke_width + 1):
+                    for dy in range(-stroke_width, stroke_width + 1):
+                        if dx != 0 or dy != 0:
+                            draw.text((x + dx, y + dy), text, font=font, fill=stroke_fill)
+                draw.text((x, y), text, font=font, fill=fill)
+
+            # Draw each character individually with outline
+            for char in text:
+                if char == " ":
+                    x += font_size // 2
+                    continue
+                bbox = draw.textbbox((0, 0), char, font=font)
+                w = bbox[2] - bbox[0]
+                h = bbox[3] - bbox[1]
+                draw_text_with_outline(draw, (x, y - h // 2), char, font)
+                x += w + spacing
+
+            # Output
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format="JPEG")
+            img_bytes.seek(0)
+            return img_bytes
+
+        image_data = gen()
+        encoded = base64.b64encode(image_data.getvalue()).decode("utf-8")
+        return json.dumps({
+            "filename": "calling_card.jpg",
+            "mime_type": "image/jpeg",
+            "image_data": encoded
+        })
 
 
 class Step:
@@ -2469,6 +2518,46 @@ def users():
     return jsonify({"users": [{"id": user['id'],"username": user['username']} for user in mock_users]})
   else:
     return jsonify({"message": "Missing authentication header"}), 401
+  
+
+# Store uploaded images in memory
+in_memory_images = {}
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'message': 'No image file'}), 400
+
+    file = request.files['image']
+    filename = file.filename
+
+    if not filename or not allowed_file(filename):
+        return jsonify({'success': False, 'message': 'Invalid file'}), 400
+
+    # Save image in memory (not to disk)
+    in_memory_images[filename] = {
+        'content': file.read(),
+        'mimetype': file.mimetype
+    }
+
+    return jsonify({
+        'success': True,
+        'message': 'Image received',
+        'url': f'/uploads/{filename}'
+    }), 200
+
+@app.route('/uploads/<filename>')
+def get_uploaded_image(filename):
+    img = in_memory_images.get(filename)
+    if not img:
+        return jsonify({'success': False, 'message': 'Image not found'}), 404
+
+    return send_file(BytesIO(img['content']), mimetype=img['mimetype'])
 
 
 
