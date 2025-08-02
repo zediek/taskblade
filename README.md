@@ -80,7 +80,8 @@ Define your users and tasks in a single `config.json` file:
               },
               "data": {},
               "files": {
-                "image": "{{ gen_img() }}"
+                "image": "{{ gen_img() }}",
+                "image_text": "{{ gen_img('Testing') }}"
               },
               "extract": {
                 "y": "json.data.variable"
@@ -113,7 +114,7 @@ You can use the following in your templates:
 - `{{ rdate() }}` or `{{ rdate(2025-07-30) }}` — set date or get today's date
 - `{{ rpick([1,2,3,4,5]) }}` — randomly pick data inside list
 - `{{ num_to_words(1) }}` — converts a numeric value to its word form (e.g., 42 → "forty-two") 
-- `{{ gen_img() }}` — generate image data for file uploads  
+- `{{ gen_img() }}` or `{{ gen_img('Testing') }}` — generate image data with text for file uploads  
 - `{{ x }}` — dynamic value set from previous steps
 - `{{ y }}` — value extracted from previous responses
 

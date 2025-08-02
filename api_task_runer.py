@@ -27,7 +27,7 @@ from colorama import Fore, Style, init, Back
 
 
 class GenIMG:
-    def run(self):
+    def run(self, text:str):
         def gen():
             width, height = 1024, 720
             img = Image.new("RGB", (width, height), color="red")
@@ -47,20 +47,47 @@ class GenIMG:
                 draw.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], fill="red")
                 radius -= red_width
 
-            # Text setup
-            text = "TAKE YOUR HEART"
-            font_size = 60
+            # Font setup
+            font_size = 30
             try:
                 font = ImageFont.truetype("arialbd.ttf", font_size)
             except:
                 font = ImageFont.load_default()
 
             spacing = 1
-            total_width = sum(draw.textbbox((0, 0), c, font=font)[2] + spacing for c in text if c != " ") - spacing
-            x = (width - total_width) // 2
-            y = height // 2
+            left_margin = 80
+            right_margin = 80
+            max_line_width = width - left_margin - right_margin
 
-            # Function to draw outlined text
+            # Word-based line wrapping
+            words = text.split(" ")
+            lines = []
+            current_line = ""
+            current_width = 0
+
+            for word in words:
+                word_width = sum(draw.textbbox((0, 0), c, font=font)[2] + spacing for c in word)
+                space_width = font_size // 2  # space between words
+
+                if current_line:
+                    if current_width + space_width + word_width > max_line_width:
+                        lines.append(current_line)
+                        current_line = word
+                        current_width = word_width
+                    else:
+                        current_line += " " + word
+                        current_width += space_width + word_width
+                else:
+                    current_line = word
+                    current_width = word_width
+
+            if current_line:
+                lines.append(current_line)
+
+            # Vertical centering
+            total_height = len(lines) * font_size
+            start_y = (height - total_height) // 2
+
             def draw_text_with_outline(draw, pos, text, font, stroke_width=5, fill="black", stroke_fill="white"):
                 x, y = pos
                 for dx in range(-stroke_width, stroke_width + 1):
@@ -69,18 +96,28 @@ class GenIMG:
                             draw.text((x + dx, y + dy), text, font=font, fill=stroke_fill)
                 draw.text((x, y), text, font=font, fill=fill)
 
-            # Draw each character individually with outline
-            for char in text:
-                if char == " ":
-                    x += font_size // 2
-                    continue
-                bbox = draw.textbbox((0, 0), char, font=font)
-                w = bbox[2] - bbox[0]
-                h = bbox[3] - bbox[1]
-                draw_text_with_outline(draw, (x, y - h // 2), char, font)
-                x += w + spacing
+            # Centered text rendering within margins
+            y = start_y
+            for line in lines:
+                total_line_width = sum(
+                    draw.textbbox((0, 0), c, font=font)[2] + spacing if c != " " else font_size // 2
+                    for c in line
+                ) - spacing
 
-            # Output
+                x = left_margin + (max_line_width - total_line_width) // 2
+
+                for char in line:
+                    if char == " ":
+                        x += font_size // 2
+                        continue
+                    bbox = draw.textbbox((0, 0), char, font=font)
+                    w = bbox[2] - bbox[0]
+                    h = bbox[3] - bbox[1]
+                    draw_text_with_outline(draw, (x, y - h // 2), char, font)
+                    x += w + spacing
+                y += font_size
+
+            # Encode the image as base64
             img_bytes = io.BytesIO()
             img.save(img_bytes, format="JPEG")
             img_bytes.seek(0)
@@ -93,6 +130,7 @@ class GenIMG:
             "mime_type": "image/jpeg",
             "image_data": encoded
         })
+
 
 
 class Step:
@@ -166,7 +204,7 @@ class Step:
                         return rendered
                 except Exception as err:
                     msg = str(err)
-                    print(f"[ERROR] Failed to render '{raw_part}' as {data_type}: {msg}")
+                    self.logger.append(f"[ERROR] Failed to render '{raw_part}' as {data_type}: {msg}")
 
                     # Try to extract undefined variable name from error message
                     if "' is undefined" in msg:
@@ -179,9 +217,9 @@ class Step:
                                     final_change = raw_part.replace(var_name, candidates[0])
                                     return self.interpolate(f"{final_change}|{data_type}")
                             except EOFError:
-                                print("[WARNING] Cannot prompt in non-interactive mode.")
+                                self.logger.append("[WARNING] Cannot prompt in non-interactive mode.")
                         else:
-                            print(f"[SUGGESTION] No close match found for '{var_name}'")
+                            self.logger.append(f"[SUGGESTION] No close match found for '{var_name}'")
 
                     return None
                 
@@ -193,8 +231,10 @@ class Step:
                     context["gen_key"] = lambda: uuid.uuid4().hex
                 elif "gen_num()" in raw:
                     context["gen_num"] = lambda: random.randint(0, 9)
-                elif "gen_img()" in raw:
-                    context["gen_img"] = lambda: self.gen_img.run()
+                elif "gen_img" in raw:
+                    def gen_img(t:str = "TAKE YOUR HEART"):
+                        return self.gen_img.run(t)
+                    context["gen_img"] = gen_img
                 elif "rdate" in raw:
                     def rdate(d:str=None):
                         try:
@@ -212,7 +252,7 @@ class Step:
                             return None
                     context["rpick"] = rpick
                 elif "num_to_words" in raw:
-                    def num_to_words(n:str):
+                    def num_to_words(n):
                         try:
                             n = int(n)
                             return ' '.join(w.capitalize() for w in num2words(n).split())
@@ -223,7 +263,7 @@ class Step:
                 try:
                     rendered = self.jinja_env.from_string(raw).render(context)
 
-                    if "gen_img()" in raw:
+                    if "gen_img" in raw:
                         try:
                             result = json.loads(rendered.replace("'", '"'))
                             filename = result["filename"]
@@ -231,12 +271,12 @@ class Step:
                             image_data = base64.b64decode(result["image_data"])
                             return (filename, io.BytesIO(image_data), mime_type)
                         except Exception as e:
-                            print("Failed to parse gen_img result:", e)
+                            self.logger.append("Failed to parse gen_img result:", e)
                             return None
                     else:
                         return rendered
                 except Exception as e:
-                    print(f"[ERROR] Failed to render '{raw}': {e}")
+                    self.logger.append(f"[ERROR] Failed to render '{raw}': {e}")
                     return None
         else:
             return raw
@@ -638,7 +678,7 @@ class UserRunner:
         return all_users
 
     def load_config(self):
-        with open(self.config_path) as f:
+        with open(self.config_path, encoding="utf-8") as f:
             # try:
                 config = json.load(f)
                 self.base_url = config.get("base_url", "")
