@@ -256,6 +256,24 @@ class Step:
                     def gen_img(t:str = "TAKE YOUR HEART"):
                         return self.gen_img.run(t)
                     context["gen_img"] = gen_img
+                elif "rinc" in raw:
+                    def rinc(lst: list, sym: str = "+", key: str = None):
+                        """
+                        rinc = resolve + increase.
+                        Supports "+" and "*" operations over a list of values or dicts with a given key.
+                        """
+                        try:
+                            values = [(x[key] if isinstance(x, dict) and key else x) for x in lst]
+                            if sym == "+":
+                                return sum(values)
+                            elif sym == "*":
+                                result = 1
+                                for v in values:
+                                    result *= v
+                                return result
+                        except Exception:
+                            return None
+                    context["rinc"] = rinc
                 elif "rdate" in raw:
                     def rdate(d:str=None):
                         try:

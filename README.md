@@ -72,6 +72,7 @@ Define your users and tasks in a single `config.json` file:
               "json": {
                 "num": "{{ gen_num() }}|int",
                 "key": "{{ gen_key() }}",
+                "add_increase": "{{ rinc([1,2,3],'+') }}",
                 "date_today": "{{ rdate() }}",
                 "set_date": "{{ rdate(2025-07-30) }}",
                 "random_choice": "{{ rpick([1,2,3,4,5]) }}",
@@ -111,10 +112,11 @@ You can use the following in your templates:
 - `{{ profile.name }}`, `{{ profile.username }}`, `{{ profile.password }}` — per-profile values  
 - `{{ gen_num() }}` — generate a number  
 - `{{ gen_key() }}` — generate a random key or string
+- `{{ gen_img() }}` or `{{ gen_img('Testing') }}` — generate image data with text for file uploads  
+- `{{ rinc([1,2,3],'+') }}` or `{{ rinc([1,2,3],'+') }}` — set list, symbol(+ or *) or key(dictionary key) to resolve increase calculation
 - `{{ rdate() }}` or `{{ rdate(2025-07-30) }}` — set date or get today's date
 - `{{ rpick([1,2,3,4,5]) }}` — randomly pick data inside list
 - `{{ num_to_words(1) }}` — converts a numeric value to its word form (e.g., 42 → "forty-two") 
-- `{{ gen_img() }}` or `{{ gen_img('Testing') }}` — generate image data with text for file uploads  
 - `{{ x }}` — dynamic value set from previous steps
 - `{{ y }}` — value extracted from previous responses
 
