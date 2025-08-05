@@ -113,7 +113,7 @@ You can use the following in your templates:
 - `{{ gen_num() }}` — generate a number  
 - `{{ gen_key() }}` — generate a random key or string
 - `{{ gen_img() }}` or `{{ gen_img('Testing') }}` — generate image data with text for file uploads  
-- `{{ rinc([1,2,3],'+') }}` or `{{ rinc([1,2,3],'+') }}` — set list, symbol(+ or *) or key(dictionary key) to resolve increase calculation
+- `{{ rinc([1,2,3],'+') }}` or `{{ rinc([{"val":1},{"val":2},{"val":3}],'+',"val") }}` — set list, symbol(+ or *) or key(dictionary key) to resolve increase calculation
 - `{{ rdate() }}` or `{{ rdate(2025-07-30) }}` — set date or get today's date
 - `{{ rpick([1,2,3,4,5]) }}` — randomly pick data inside list
 - `{{ num_to_words(1) }}` — converts a numeric value to its word form (e.g., 42 → "forty-two") 
