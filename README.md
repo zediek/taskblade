@@ -33,6 +33,7 @@ TASKBLADE/
 ├── taskblade.py            # Main CLI entry point (called by `taskblade` command)
 ├── server.py               # Flask web interface
 ├── api_task_runer.py       # CLI task runner (used internally)
+├── port_scanner.py         # Scan local network via port/s
 ├── setup.cfg               # Package metadata and entry point config
 ├── pyproject.toml          # Optional modern Python packaging support
 ├── [anyname]-config.json   # User + Task + Step definitions
