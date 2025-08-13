@@ -699,7 +699,6 @@ class Task:
 
             if store_file.data:
                 self.context = store_file.data
-                print("sdfsdfsdf", self.context)
 
             for loop in range(self.loop):
                 time.sleep(self.wait if loop > 0 else 0)
