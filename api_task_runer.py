@@ -59,6 +59,19 @@ class StoreData:
         with open(path, "r", encoding="utf-8") as f:
             self.data = json.load(f)
         return self.data
+    
+     # Context manager support
+    def __enter__(self):
+        """When entering 'with', load existing data (if file exists)."""
+        try:
+            self.load_data()
+        except FileNotFoundError:
+            self.data = {}
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """When exiting 'with', save the data."""
+        self.save_data()
 
 
 
@@ -626,6 +639,7 @@ class Task:
         self.base_url = base_url
         self.logfile_path = self._prepare_log_file()
         self.csvfile_path = self._prepare_csv_file()
+        self.store_file_path = self._prepare_store_file()
 
         self.context = context
         self.extract_keys = extract_keys
@@ -656,10 +670,21 @@ class Task:
                 writer = csv.DictWriter(f, fieldnames=["timestamp", "step", "status_code", "url", "request_json", "request_data", "files", "response", "extract_variables", "set_variables", "assertions",])
                 writer.writeheader()
         return path
+    
+    def _prepare_store_file(self):
+        os.makedirs("store", exist_ok=True)
+        os.makedirs("store/"+self.store_data, exist_ok=True)
+        store_instance = StoreData(self.store_data+"/"+self.user_name)
+        path = store_instance._get_store_path()
+        if not path or not os.path.exists(path):
+            store_instance.save_data()
+        
+        return self.store_data+"/"+self.user_name
+
 
     def run_steps(self):
         file_name = str(self.config_path).replace(".json", "")
-        with open(self.logfile_path, "a", encoding="utf-8") as logger_file, open(self.csvfile_path, "a", newline="", encoding="utf-8") as csv_file:
+        with open(self.logfile_path, "a", encoding="utf-8") as logger_file, open(self.csvfile_path, "a", newline="", encoding="utf-8") as csv_file, StoreData(self.store_file_path) as store_file:
             writer = csv.DictWriter(csv_file, fieldnames=["timestamp", "step", "status_code", "url", "request_json", "request_data", "files", "response", "extract_variables", "set_variables", "assertions",])
 
             user_podium_dict = {
@@ -672,25 +697,9 @@ class Task:
                 "num_of_blocked_error": None
             }
 
-            store_data_list = []
-
-            if self.store_data != "":
-                        
-                try:
-                    load_store_data = StoreData(self.store_data)
-                    store_data_list = load_store_data.load_data()
-                        
-                except:
-                    save_store_data = StoreData(self.store_data)
-                    save_store_data.save_data()
-
-            if store_data_list != []:
-                get_store_datas = [ sd for sd in store_data_list if sd.get("name", "") == self.user_name ]
-
-                for gsd in get_store_datas:
-                    if gsd["context"] != {}:
-                        print(gsd["context"])
-                        self.context = gsd["context"]
+            if store_file.data:
+                self.context = store_file.data
+                print("sdfsdfsdf", self.context)
 
             for loop in range(self.loop):
                 time.sleep(self.wait if loop > 0 else 0)
@@ -701,22 +710,7 @@ class Task:
                     else:
                         continue
 
-            
-
-            match = [ sdl  for sdl in store_data_list if sdl["name"] == self.user_name ]
-            if not match:
-                print("context",self.context)
-                store_data_list.append({
-                    "name": self.user_name,
-                    "context": self.context
-                })
-            else:
-                for sdl in store_data_list:
-                    sdl["context"] = self.context
-
-            if self.store_data != "":
-                save_store_data = StoreData(self.store_data,{"data":store_data_list})
-                save_store_data.save_data()
+            store_file.data = self.context
 
             user_podium_dict["end"] = time.perf_counter()
             user_podium_dict["num_of_response"] = len(self.response_list)
