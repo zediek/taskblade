@@ -44,3 +44,6 @@ instance/
 ehthumbs.db
 Icon?
 Desktop.ini
+
+# Store Data
+store/

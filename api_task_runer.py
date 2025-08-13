@@ -19,11 +19,47 @@ import io
 import re
 import copy
 from num2words import num2words
-import json
 import difflib
 
 from pyfiglet import Figlet
 from colorama import Fore, Style, init, Back
+from pathlib import Path
+
+
+class StoreData:
+    def __init__(self, filename=None, data:dict={}):
+        self.filename = filename
+        self.data = data.get("data",[])
+        self.store_dir = Path("store")  # fixed /store directory
+
+        # Make sure /store exists
+        self.store_dir.mkdir(parents=True, exist_ok=True)
+
+    def _get_store_path(self):
+        if not self.filename:
+            return None
+
+        # Always save inside /store and ensure .store extension
+        path = self.store_dir / self.filename
+        if path.suffix != ".store":
+            path = path.with_suffix(".store")
+        return path
+
+    def save_data(self):
+        path = self._get_store_path()
+        if path == None:
+            return None
+        with open(path, "w+", encoding="utf-8") as f:
+            json.dump(self.data, f, ensure_ascii=False, indent=2)
+
+    def load_data(self):
+        path = self._get_store_path()
+        if path == None:
+            return None
+        with open(path, "r", encoding="utf-8") as f:
+            self.data = json.load(f)
+        return self.data
+
 
 
 class GenIMG:
@@ -577,9 +613,10 @@ class Step:
 
 
 class Task:
-    def __init__(self, config_path, config, code, user_name, base_url, globals: dict, context: dict, extract_keys: list, set_keys: list, user_podium_list: list):
+    def __init__(self, config_path, config, code, user_name, base_url, globals: dict, store_data: str, context: dict, extract_keys: list, set_keys: list, user_podium_list: list):
         self.config_path = config_path
         self.globals = globals
+        self.store_data = store_data
         self.code = code
         self.name = config.get("name", "Unnamed Task")
         self.loop = config.get("loop", 1)
@@ -635,6 +672,26 @@ class Task:
                 "num_of_blocked_error": None
             }
 
+            store_data_list = []
+
+            if self.store_data != "":
+                        
+                try:
+                    load_store_data = StoreData(self.store_data)
+                    store_data_list = load_store_data.load_data()
+                        
+                except:
+                    save_store_data = StoreData(self.store_data)
+                    save_store_data.save_data()
+
+            if store_data_list != []:
+                get_store_datas = [ sd for sd in store_data_list if sd.get("name", "") == self.user_name ]
+
+                for gsd in get_store_datas:
+                    if gsd["context"] != {}:
+                        print(gsd["context"])
+                        self.context = gsd["context"]
+
             for loop in range(self.loop):
                 time.sleep(self.wait if loop > 0 else 0)
                 for step_conf in self.steps_config:
@@ -643,6 +700,23 @@ class Task:
                         step.run()
                     else:
                         continue
+
+            
+
+            match = [ sdl  for sdl in store_data_list if sdl["name"] == self.user_name ]
+            if not match:
+                print("context",self.context)
+                store_data_list.append({
+                    "name": self.user_name,
+                    "context": self.context
+                })
+            else:
+                for sdl in store_data_list:
+                    sdl["context"] = self.context
+
+            if self.store_data != "":
+                save_store_data = StoreData(self.store_data,{"data":store_data_list})
+                save_store_data.save_data()
 
             user_podium_dict["end"] = time.perf_counter()
             user_podium_dict["num_of_response"] = len(self.response_list)
@@ -687,6 +761,8 @@ class UserRunner:
                 user_copy["name"] = profile["name"]
                 globals = user_entry.get("globals",{})
                 user_copy["globals"] = self.substitute_placeholders(globals, profile)
+                store_data = user_entry.get("store_data", "")
+                user_copy["store_data"] = self.substitute_placeholders(store_data, profile)
                 user_copy.pop("profiles", None)  # Remove original profile string list
                 user_copy["tasks"] = [
                     self.substitute_placeholders(task, profile)
@@ -700,20 +776,35 @@ class UserRunner:
             # try:
                 config = json.load(f)
                 self.base_url = config.get("base_url", "")
+
+                
+
+
                 self.users = self.expand_users(config)
 
                 for user_conf in self.users:
                     user_name = user_conf["name"]
                     globals = user_conf["globals"]
+
+                    store_data = user_conf["store_data"]
+
+
+                    
                     task_list = []
                     context = {}
                     extract_keys = []
                     set_keys = []
+
+                    
+
                     for task_conf in user_conf.get("tasks", []):
-                        task = Task(self.config_path, task_conf, self.code, user_name, self.base_url, globals, context, extract_keys, set_keys, self.user_podium_list)
+                        task = Task(self.config_path, task_conf, self.code, user_name, self.base_url, globals, store_data, context, extract_keys, set_keys, self.user_podium_list)
                         task_list.append(task)
 
                     user_conf["tasks"] = task_list
+                    
+                
+                
 
             # except Exception as err:
             #     print(err)
