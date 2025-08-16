@@ -12,7 +12,7 @@ def main():
         return show_help()
 
     cmd = args[0]
-    arg1 = args[1] if len(args) > 1 else None
+    arg1 = " ".join(str(args[1]) for i in range(1, len(args)) )
 
     if cmd == "serve":
         subprocess.run([sys.executable, "server.py"])
@@ -21,6 +21,7 @@ def main():
         if not arg1:
             print("❌ Please provide a config file: taskblade -c your-config.json")
             return
+        
         subprocess.run([sys.executable, "api_task_runer.py", "-c", arg1])
 
     elif cmd == "scan":

@@ -862,9 +862,15 @@ if __name__ == "__main__":
 
 
     parser = argparse.ArgumentParser(description="Class-based API Step Runner with Worker Pool")
-    parser.add_argument("-c", "--config", required=True, help="Path to config JSON file")
+    parser.add_argument("-c", "--config", required=True, action="store", nargs='+', help="Path to config JSON file/s")
     args = parser.parse_args()
 
-    runner = UserRunner(args.config)
-    runner.load_config()
-    runner.run_all()
+    split_args = str(args.config).replace("[","").replace("]","").replace("'","").split(" ")
+
+    for con in split_args:
+        print("[INFO] Config file:",con)
+        print("----------------------------------------------")
+        runner = UserRunner(con)
+        runner.load_config()
+        runner.run_all()
+        print("----------------------------------------------")
