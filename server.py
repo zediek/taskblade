@@ -1261,18 +1261,15 @@ HTML_LOGS_TEMPLATE = """
   </nav>
 
   <div class="container-fluid">
-    <h1 class="mb-1">Logs Viewer</h1>
-
-    
     <div class="p5-card bg-dark p-0">
       <div class="p5-card-header">
-        <h5 class="p5-title">Log Dir Viewer</h5>
+        <h5 class="p5-title">Logs Viewer</h5>
       </div>
       <div class="p5-card-body mt-3">
 
         <div class="row">
           <div class="col-md-6 p-1">
-            <label for="logSelect" class="p5-label">Select Log File:</label>
+            <label for="logSelect" class="p5-label">Select Logs:</label>
             <select class="p5-input" id="logSelect"></select>
           </div>
           <div class="col-md-2 d-flex align-items-end p-1">
@@ -1281,10 +1278,10 @@ HTML_LOGS_TEMPLATE = """
         </div>
 
         <div class="row h-100">
-          <div class="col-lg-8 col-md-12 col-sm-12 p-1" style="height: 35vh;">
+          <div class="col-lg-8 col-md-12 col-sm-12 p-1" style="height: 37vh;">
             <pre id="logContent" class="h-100">Select a log dir to view files its contents...</pre>
           </div>
-          <div class="col-lg-4 col-md-12 col-sm-12 p-1" style="height: 35vh;">
+          <div class="col-lg-4 col-md-12 col-sm-12 p-1" style="height: 37vh;">
             <div id="elapsedTimeDisplay" class="text-light h-100"></div>
           </div>
           <div class="col-lg-12 col-md-12 col-sm-12 p-1" style="height: 25vh;">
