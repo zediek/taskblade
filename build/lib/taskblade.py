@@ -12,7 +12,7 @@ def main():
         return show_help()
 
     cmd = args[0]
-    arg1 = " ".join(str(args[1]) for i in range(1, len(args)) )
+    arg1 = " ".join([args[i] for i in range(1, len(args))])
 
     if cmd == "serve":
         subprocess.run([sys.executable, "server.py"])
@@ -25,7 +25,7 @@ def main():
         subprocess.run([sys.executable, "api_task_runer.py", "-c", arg1])
 
     elif cmd == "scan":
-        subprocess.run([sys.executable, "port_scanner.py", " ".join([args[i] for i in range(len(args)) if i != 0 ])])
+        subprocess.run([sys.executable, "port_scanner.py", " ".join([args[i] for i in range(1, len(args))])])
 
     elif cmd == "check_update":
         self_update()
