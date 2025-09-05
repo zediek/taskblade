@@ -39,6 +39,7 @@ TASKBLADE/
 ├── [anyname]-config.json   # User + Task + Step definitions
 ├── csv/                    # Request/response data in CSV per user
 ├── logs/                   # Execution logs per user
+├── store/                  # stores data
 ├── LICENSE                 # MIT License
 ├── README.md               # Project documentation
 └── .venv/                  # (Optional) Virtual environment folder
@@ -57,6 +58,7 @@ Define your users and tasks in a single `config.json` file:
     {
       "profiles": ["Player1:player1@pw1", "Player2:player2@pw2"],
       "globals": {},
+      "store_data": "players",
       "tasks": [
         {
           "name": "Task Name",
@@ -118,12 +120,107 @@ You can use the following in your templates:
 - `{{ rdate() }}` or `{{ rdate(2025-07-30) }}` — set date or get today's date
 - `{{ rpick([1,2,3,4,5]) }}` — randomly pick data inside list
 - `{{ num_to_words(1) }}` — converts a numeric value to its word form (e.g., 42 → "forty-two") 
-- `{{ x }}` — dynamic value set from previous steps
-- `{{ y }}` — value extracted from previous responses
+- `{{ x }}` — dynamic key variable value set from previous or current steps
+- `{{ y }}` — dynamic key variable value extracted from previous or current responses
 
 ---
 
-## 🔧 Step Configuration – Explained
+## 🔧 Users Configuration – Explained
+
+Each user defines list of users, assign global variables or tasks.
+Below is the breakdown of what each field does how it works.
+
+---
+
+### 👥 `profiles`
+
+A list of users of combination of name, username, password.
+
+```json
+"profiles": ["Player1:player1@pw1"]
+```
+
+---
+
+### 🌐 `globals`
+
+Are user-scoped key–value pairs, accessible to all tasks and steps within the same user, not shared across users, and act like constants that cannot be changed or overwritten.
+
+---
+
+### 💾 `store_data`
+
+A per-user persistence mechanism that saves and reloads data into a <username>.store file inside the specified folder.
+
+- Scope: Defined under a user.
+- Stored Data: Only the user’s globals, and values updated through extract and set under steps.
+- Updates: When steps run, changes from extract and set are automatically written to the .store file.
+- Reloading: On the next run, the user’s globals are automatically loaded back from their .store file.
+- Isolation: Each user has their own .store file, not shared with others.
+
+```json
+"store_data": "players"
+```
+File structure example inside folder store:
+```
+store/
+└── players/
+    ├── Player1.store
+    └── Player2.store
+```
+
+---
+
+### 📝 `tasks`
+
+Are user-scoped collections of steps that define a sequence of actions to be executed.
+
+---
+
+## 🔧 Tasks Configuration – Explained
+
+Each tasks defines number of loop, wait to execute steps under current task.
+Below is the breakdown of what each field does how it works.
+
+---
+
+### 🏷️ `name`
+
+A label for the task. This is useful for identifying what the task does.
+
+```json
+"name": "First Task"
+```
+
+---
+
+### 🔄 `loop`
+
+A control structure that repeatedly executes group of sets of instructions until a certain condition is met or for a specified number of times.
+
+```json
+"loop": 1
+```
+
+---
+
+### ⏳ `wait`
+
+A pause in a process for a set time or until something happens.
+
+```json
+"wait": 0
+```
+
+---
+
+### ⎘ `steps`
+
+Are the individual actions or instructions that make up a task in your system.
+
+---
+
+## 🔧 Steps Configuration – Explained
 
 Each step defines one HTTP request or logic block in your workflow.
 Below is a breakdown of what each field does and how it works.
