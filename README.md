@@ -144,7 +144,7 @@ A list of users of combination of name, username, password.
 
 ### 🌐 `globals`
 
-Are user-scoped key–value pairs, accessible to all tasks and steps within the same user, not shared across users, and act like constants that cannot be changed or overwritten.
+Are user-scoped key–value pairs, accessible to all tasks and steps within the same user, not shared across users. They persist across tasks, but can be temporarily changed within a task using set and revert to their original value afterward.
 
 ---
 
