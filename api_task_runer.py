@@ -20,7 +20,7 @@ import re
 import copy
 from num2words import num2words
 import difflib
-
+from decimal import Decimal
 from pyfiglet import Figlet
 from colorama import Fore, Style, init, Back
 from pathlib import Path
@@ -218,6 +218,8 @@ class Step:
         self.set_keys = set_keys
 
         self.response_list = response_list
+
+        self.diagnostic_reasoning = []
 
         self.is_success = is_success
         self.is_block_error = is_block_error
@@ -433,8 +435,13 @@ class Step:
 
                 expected = self.interpolate(assertion.get("expected"))
                 condition = assertion.get("if")
-                reason = assertion.get("reason", "")
+                
                 actual = self.context.get(key)
+
+                reason = assertion.get("reason", "")
+
+                self.assert_with_diagnostics(expected, actual)
+                diagnostic_reasoning = self.diagnostic_reasoning
 
                 if condition:
                     try:
@@ -446,7 +453,8 @@ class Step:
                             "expected": expected,
                             "actual": actual,
                             "passed": False,
-                            "error": f"[Condition Eval Error] '{condition}': {e}"
+                            "error": f"[Condition Eval Error] '{condition}': {e}",
+                            "diagnostic_reasoning": ""
                         })
                         continue
 
@@ -456,10 +464,85 @@ class Step:
                     "expected": expected,
                     "actual": actual,
                     "passed": passed,
-                    "error": "" if passed else f"Assertion failed: expected {expected}, got {actual}. Reason: {reason}"
+                    "error": "" if passed else f"Assertion failed: expected {expected}, got {actual}. Reason: {reason}",
+                    "diagnostic_reasoning": diagnostic_reasoning
                 })
 
+
         return results
+
+    def assert_with_diagnostics(self, expected, output):
+        """
+        Assert expected == output, else try to guess possible reasons.
+        Works with numbers, strings, datetimes, and decimals.
+        """
+        if expected == output:
+            print("✅ Assertion passed")
+            return True
+
+        print("❌ Assertion failed")
+        print(f"Expected: {expected!r} ({type(expected).__name__}), Got: {output!r} ({type(output).__name__})")
+
+        # 🔹 Type mismatch
+        if type(expected) != type(output):
+            self.diagnostic_reasoning.append("Type mismatch (e.g., int vs str, float vs Decimal)")
+
+        # 🔹 Numeric tolerance check
+        try:
+            if abs(float(expected) - float(output)) < 1e-6:
+                self.diagnostic_reasoning.append("Numeric precision issue (rounding/float error)")
+        except Exception:
+            pass
+
+        # 🔹 String formatting check
+        try:
+            if str(expected).strip() == str(output).strip():
+                self.diagnostic_reasoning.append("Whitespace/formatting issue")
+            if str(expected).lower() == str(output).lower():
+                self.diagnostic_reasoning.append("Case sensitivity issue")
+        except Exception:
+            pass
+
+        # 🔹 Decimal vs float mismatch
+        if isinstance(expected, (float, Decimal)) and isinstance(output, (float, Decimal)):
+            if round(float(expected), 2) == round(float(output), 2):
+                self.diagnostic_reasoning.append("Rounded values match (decimal vs float mismatch)")
+
+        # 🔹 Date/Datetime formatting mismatch
+        if isinstance(expected, (datetime, str)) or isinstance(output, (datetime, str)):
+            try:
+                exp_dt = expected if isinstance(expected, datetime) else datetime.fromisoformat(str(expected))
+                out_dt = output if isinstance(output, datetime) else datetime.fromisoformat(str(output))
+                if exp_dt == out_dt:
+                    self.diagnostic_reasoning.append("Datetime format mismatch (same moment, different string)")
+            except Exception:
+                pass
+
+        # 🔹 Sign flip check (both ways)
+        try:
+            if abs(float(expected)) == abs(float(output)) and expected != output:
+                self.diagnostic_reasoning.append("Sign error (positive vs negative mismatch)")
+        except Exception:
+            pass
+
+        # 🔹 Operator mistake guess (add vs subtract)
+        try:
+            diff = float(output) - float(expected)
+            if diff != 0:
+                self.diagnostic_reasoning.append(f"Possible operator mistake: output differs by {diff} (maybe used '+' instead of '-' or vice versa)")
+        except Exception:
+            pass
+
+        # 🔹 General fallback
+        if not self.diagnostic_reasoning:
+            self.diagnostic_reasoning.append("Unknown difference (needs manual inspection)")
+
+        print("🔎 Possible reasons:")
+        for r in self.diagnostic_reasoning:
+            print(" -", r)
+
+        return False
+
 
     def run(self):
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -532,7 +615,13 @@ class Step:
                 if result["passed"]:
                     assertions_message += f"[ASSERT PASS] {result['key']} == {result['expected']}, "
                 else:
-                    assertions_message += f"[ASSERT FAIL] {result['error']}"
+                    assertions_message += f"[ASSERT FAIL] {result['error']}\n"
+                    assertions_message += f"""
+    DIAGNOSTICS:
+        {result["diagnostic_reasoning"]}
+
+
+                    """
 
             
 
