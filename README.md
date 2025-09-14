@@ -395,7 +395,7 @@ Access TASKBLADE through a sleek Flask-based UI with the following tools:
 ### Clone the repository:
 
 ```bash
-git clone https://github.com/yourname/taskblade.git
+git clone https://github.com/zediek/taskblade.git
 cd taskblade
 ```
 
