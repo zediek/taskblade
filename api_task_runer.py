@@ -49,8 +49,11 @@ class StoreData:
         path = self._get_store_path()
         if path == None:
             return None
-        with open(path, "w+", encoding="utf-8") as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=2)
+        try:
+            with open(path, "w+", encoding="utf-8") as f:
+                json.dump(self.data, f, ensure_ascii=False, indent=2)
+        except:
+            pass
 
     def load_data(self):
         path = self._get_store_path()
@@ -328,6 +331,18 @@ class Step:
                         except Exception:
                             return None
                     context["num_to_words"] = num_to_words
+
+                elif "word_lists" in raw:
+                    def word_lists(file:str=None, index:int=0):
+                        try:
+                            with open(file=file, mode="r", encoding="utf-8") as wordlist_data:
+                                contents = wordlist_data.read().split("\n")
+                                return contents[index]
+                            
+                        except:
+                            return None
+                        
+                    context["word_lists"] = word_lists
 
                 try:
                     rendered = self.jinja_env.from_string(raw).render(context)
@@ -807,6 +822,7 @@ class Task:
             self.user_podium_list.append(user_podium_dict)
 
     def run(self):
+        print()
         print(f"[Task] User {self.user_name} is starting task: {self.name}")
         self.run_steps()
 
@@ -922,9 +938,11 @@ class UserRunner:
                 print(f"[{user['name']} {user['task']} ({str(podium+1)} place)] Elapsed time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms | Number of response: {user['num_of_response']} | Number of success: {user['num_of_success']} | Number of blocked/error {user['num_of_blocked_error']}")
 
     def run_user_tasks(self, user_name, tasks):
+        print()
         print(f"[UserRunner] Starting user {user_name} with {len(tasks)} tasks")
         for task in tasks:
             task.run()
+        print()
         print(f"[UserRunner] Finished user {user_name}")
         
 
