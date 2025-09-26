@@ -1,4 +1,5 @@
 import argparse
+import ast
 import base64
 import json
 import math
@@ -331,7 +332,6 @@ class Step:
                         except Exception:
                             return None
                     context["num_to_words"] = num_to_words
-
                 elif "word_lists" in raw:
                     def word_lists(file:str=None, index:int=0):
                         try:
@@ -343,6 +343,76 @@ class Step:
                             return None
                         
                     context["word_lists"] = word_lists
+                elif "lapp" in raw:
+                    def lapp(key:str, new_data: any = None):
+                        try:
+                            # If key not yet in context → initialize
+                            if key not in self.context:
+                                self.context[key] = []
+
+                            var = self.context[key]
+
+                            # If stored as a string → parse
+                            if isinstance(var, str):
+                                try:
+                                    var = json.loads(var)
+                                except json.JSONDecodeError:
+                                    var = ast.literal_eval(var)
+
+                            # Must be a list
+                            if not isinstance(var, list):
+                                print(f"[lapp error] {key} is not a list (got {type(var).__name__})")
+                                return None
+
+                            # Append new data
+                            var.append(new_data)
+
+                            # Store back into context
+                            self.context[key] = var
+                            return var
+                        except:
+                            return None
+
+                    context["lapp"] = lapp
+                elif "lpop" in raw:
+                    def lpop(var_key:str, target_key: str = None, index: int = -1):
+                        try:
+                            # If key not yet in context → initialize
+                            if var_key not in self.context:
+                                self.context[var_key] = []
+
+                            var = self.context[var_key]
+
+                            # If stored as a string → parse
+                            if isinstance(var, str):
+                                try:
+                                    var = json.loads(var)
+                                except json.JSONDecodeError:
+                                    var = ast.literal_eval(var)
+
+                            # Must be a list
+                            if not isinstance(var, list):
+                                print(f"[lapp error] {var_key} is not a list (got {type(var).__name__})")
+                                return None
+
+                            if target_key == None:
+                                # Pop selected value
+                                var.pop(index)
+                            else:
+                                for i, v in enumerate(var):
+                                    if isinstance(v, dict):
+                                        for k in v:
+                                            if k == target_key:
+                                                var.pop(i)
+
+
+                            # Store back into context
+                            self.context[var_key] = var
+                            return var
+                        except:
+                            return None
+                        
+                    context["lpop"] = lpop
 
                 try:
                     rendered = self.jinja_env.from_string(raw).render(context)
