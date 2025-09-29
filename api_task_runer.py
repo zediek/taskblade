@@ -437,7 +437,21 @@ class Step:
                         
                     context["lpop"] = lpop
 
-                # elif ""
+                elif "lfind" in raw:
+                    def lfind(var_key: str, find_value):
+                        try:
+                            find_results = []
+                            for c in self.context[var_key]:
+                                if isinstance(c, dict) and find_value in c.values():
+                                    find_results.append(c)
+
+                            return find_results[:]
+                        except Exception as e:
+                            return None
+
+
+
+                    context["lfind"] = lfind
 
                 try:
                     rendered = self.jinja_env.from_string(raw).render(context)
