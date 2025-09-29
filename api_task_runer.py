@@ -344,75 +344,100 @@ class Step:
                         
                     context["word_lists"] = word_lists
                 elif "lapp" in raw:
-                    def lapp(key:str, new_data: any = None):
+                    def lapp(var_key: str, new_data=None):
                         try:
-                            # If key not yet in context → initialize
-                            if key not in self.context:
-                                self.context[key] = []
+                            var = self.context.get(var_key, [])
 
-                            var = self.context[key]
-
-                            # If stored as a string → parse
+                            # If stored as a string → try to parse
                             if isinstance(var, str):
                                 try:
                                     var = json.loads(var)
-                                except json.JSONDecodeError:
-                                    var = ast.literal_eval(var)
+                                except Exception:
+                                    try:
+                                        var = ast.literal_eval(var)
+                                    except Exception:
+                                        print(f"[lapp warning] {var_key} could not be parsed, resetting to []")
+                                        var = []
 
-                            # Must be a list
+                            # Enforce list
                             if not isinstance(var, list):
-                                print(f"[lapp error] {key} is not a list (got {type(var).__name__})")
-                                return None
+                                print(f"[lapp error] {var_key} is not a list (got {type(var).__name__}), resetting")
+                                var = []
 
-                            # Append new data
+                            # If new_data looks like a JSON string → parse it
+                            if isinstance(new_data, str):
+                                try:
+                                    new_data = json.loads(new_data)
+                                except Exception:
+                                    try:
+                                        new_data = ast.literal_eval(new_data)
+                                    except Exception:
+                                        pass  # keep raw string if truly meant to be string
+
+                            # Append safely
                             var.append(new_data)
 
-                            # Store back into context
-                            self.context[key] = var
-                            return var
-                        except:
+                            # Store back
+                            # self.context[var_key] = var[:]
+                            return var[:]  # return copy of list
+                        except Exception as e:
+                            print(f"[lapp exception] {e}")
                             return None
 
                     context["lapp"] = lapp
                 elif "lpop" in raw:
-                    def lpop(var_key:str, target_key: str = None, index: int = -1):
+                    def lpop(var_key: str, target_value = None, except_target_value = None, index: int = -1):
                         try:
-                            # If key not yet in context → initialize
-                            if var_key not in self.context:
-                                self.context[var_key] = []
+                            # Get existing value or default to list
+                            var = self.context.get(var_key, [])
 
-                            var = self.context[var_key]
-
-                            # If stored as a string → parse
+                            # If stored as a string → try to parse
                             if isinstance(var, str):
                                 try:
                                     var = json.loads(var)
-                                except json.JSONDecodeError:
-                                    var = ast.literal_eval(var)
+                                except Exception:
+                                    try:
+                                        var = ast.literal_eval(var)
+                                    except Exception:
+                                        print(f"[lpop warning] {var_key} could not be parsed, resetting to []")
+                                        var = []
 
-                            # Must be a list
+                            # Enforce list
                             if not isinstance(var, list):
-                                print(f"[lapp error] {var_key} is not a list (got {type(var).__name__})")
-                                return None
+                                print(f"[lpop error] {var_key} is not a list (got {type(var).__name__}), resetting")
+                                var = []
 
-                            if target_key == None:
-                                # Pop selected value
-                                var.pop(index)
-                            else:
-                                for i, v in enumerate(var):
-                                    if isinstance(v, dict):
-                                        for k in v:
-                                            if k == target_key:
-                                                var.pop(i)
+                            # Pop logic
+                            if target_value is None and except_target_value is None:
+                                if var:  # avoid IndexError
+                                    var.pop(index)
 
+                            elif target_value is None and except_target_value is not None:
+                                # keep only items that match except_target_value
+                                new_var = []
+                                for v in var:
+                                    if isinstance(v, dict) and except_target_value in v.values():
+                                        new_var.append(v)
+                                var = new_var
 
-                            # Store back into context
-                            self.context[var_key] = var
-                            return var
-                        except:
+                            else:  # target_value provided
+                                new_var = []
+                                for v in var:
+                                    if isinstance(v, dict) and target_value in v.values():
+                                        continue  # skip matched
+                                    new_var.append(v)
+                                var = new_var
+
+                            # Store back
+                            # self.context[var_key] = var[:]
+                            return var[:]  # return copy of list
+                        except Exception as e:
+                            print(f"[lpop exception] {e}")
                             return None
                         
                     context["lpop"] = lpop
+
+                # elif ""
 
                 try:
                     rendered = self.jinja_env.from_string(raw).render(context)
@@ -882,6 +907,22 @@ class Task:
                         step.run()
                     else:
                         continue
+
+            def safe_parse(raw_str):
+                if not isinstance(raw_str, str):
+                    return raw_str
+                
+                cleaned = raw_str.replace("'None'", "None")
+                try:
+                    return ast.literal_eval(cleaned)
+                except Exception:
+                    return raw_str
+
+            for content_key in self.context:
+                try:
+                    self.context[content_key] = json.loads(self.context[content_key])
+                except Exception:
+                    self.context[content_key] = safe_parse(self.context[content_key])
 
             store_file.data = self.context
 
