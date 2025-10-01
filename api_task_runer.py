@@ -442,11 +442,16 @@ class Step:
                         try:
                             find_results = []
                             for c in self.context[var_key]:
-                                if isinstance(c, dict) and find_value in c.values():
-                                    find_results.append(c)
-
-                            return find_results[:]
-                        except Exception as e:
+                                if isinstance(c, dict):
+                                    # check inside dict values
+                                    if str(find_value) in map(str, c.values()):
+                                        find_results.append(c)
+                                else:
+                                    # check numbers, floats, strings by string conversion
+                                    if str(find_value) in str(c):
+                                        find_results.append(c)
+                            return find_results
+                        except Exception:
                             return None
 
 
