@@ -382,7 +382,7 @@ class Step:
                             return var[:]  # return copy of list
                         except Exception as e:
                             print(f"[lapp exception] {e}")
-                            return None
+                            return []
 
                     context["lapp"] = lapp
                 elif "lpop" in raw:
@@ -433,26 +433,41 @@ class Step:
                             return var[:]  # return copy of list
                         except Exception as e:
                             print(f"[lpop exception] {e}")
-                            return None
+                            return []
                         
                     context["lpop"] = lpop
 
                 elif "lfind" in raw:
                     def lfind(var_key: str, find_value):
+                        def dict_n_list_search(v):
+                            if isinstance(v, dict):
+                                if str(find_value) in map(str, v.values()):
+                                    return v
+                                else:
+                                    list_search_results = []
+                                    for v_key, v_val in v.items():
+                                        if isinstance(v_val, list):
+                                            for vd in v_val:
+                                                res = dict_n_list_search(vd)
+                                                if res:
+                                                    list_search_results.append(res)
+                                    return list_search_results or None
+                                
+                            else:
+                                # check numbers, floats, strings by string conversion
+                                if str(find_value).lower() in str(v).lower():
+                                    return v
+
                         try:
                             find_results = []
                             for c in self.context[var_key]:
-                                if isinstance(c, dict):
-                                    # check inside dict values
-                                    if str(find_value) in map(str, c.values()):
-                                        find_results.append(c)
-                                else:
-                                    # check numbers, floats, strings by string conversion
-                                    if str(find_value) in str(c):
-                                        find_results.append(c)
+                                get_res = dict_n_list_search(c)
+                                if get_res:
+                                    find_results.append(c)
                             return find_results
-                        except Exception:
-                            return None
+                        except Exception as e:
+                            print(f"[lfind exception] {e}")
+                            return []
 
 
 
