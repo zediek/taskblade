@@ -439,22 +439,49 @@ class Step:
 
                 elif "lfind" in raw:
                     def lfind(var_key: str, find_value):
-                        def dict_n_list_search(v):
-                            if isinstance(v, dict):
-                                if str(find_value) in map(str, v.values()):
-                                    return v
-                                else:
-                                    list_search_results = []
-                                    for v_key, v_val in v.items():
-                                        if isinstance(v_val, list):
-                                            for vd in v_val:
-                                                res = dict_n_list_search(vd)
-                                                if res:
-                                                    list_search_results.append(res)
-                                    return list_search_results or None
-                                
+                        """
+                        Search for a value (case-insensitive) within nested dicts/lists 
+                        stored in a context variable.
+
+                        Features:
+                        - Supports nested dict/list traversal with case-insensitive matching
+                        - Clean recursive structure using dict.items() for readability
+                        - Ensures robust, flexible lookups in stored context variables
+                        """
+
+                        def flatten(x):
+                            """Helper to flatten nested lists into a single list."""
+                            if isinstance(x, list):
+                                for i in x:
+                                    yield from flatten(i)
                             else:
-                                # check numbers, floats, strings by string conversion
+                                yield x
+
+                        def dict_n_list_search(v):
+                            """Recursively search inside dicts and lists for matching values."""
+                            # If the current value is a list, search each item
+                            if isinstance(v, list):
+                                results = []
+                                for item in v:
+                                    res = dict_n_list_search(item)
+                                    if res:
+                                        results.append(res)
+                                return results or None
+
+                            # If the current value is a dict, check its values
+                            elif isinstance(v, dict):
+                                if any(str(find_value).lower() in str(val).lower() for val in v.values()):
+                                    return v
+
+                                results = []
+                                for v_val in v.values():
+                                    res = dict_n_list_search(v_val)
+                                    if res:
+                                        results.append(res)
+                                return results or None
+
+                            # Primitive type check (int, str, float, etc.)
+                            else:
                                 if str(find_value).lower() in str(v).lower():
                                     return v
 
@@ -463,13 +490,12 @@ class Step:
                             for c in self.context[var_key]:
                                 get_res = dict_n_list_search(c)
                                 if get_res:
-                                    find_results.append(c)
+                                    # flatten results for cleaner output
+                                    find_results.extend(flatten(get_res))
                             return find_results
                         except Exception as e:
                             print(f"[lfind exception] {e}")
                             return []
-
-
 
                     context["lfind"] = lfind
 
