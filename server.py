@@ -1552,6 +1552,9 @@ HTML_PLAYGROUND_TEMPLATE = """
         this.appendStatementInput("GLOBALS")
         .setCheck("global_block")
         .appendField("Globals");
+        this.appendDummyInput()
+          .appendField("Store data")
+          .appendField(new Blockly.FieldTextInput(""), "STORE_DATA")
         this.appendStatementInput("TASKS")
             .setCheck("task_block")
             .appendField("Tasks");
@@ -1679,6 +1682,7 @@ HTML_PLAYGROUND_TEMPLATE = """
           return {
             profiles: profilecredentials(block.getInputTargetBlock("PROFILES")),
             globals: generateGlobalsFromBlock(block.getInputTargetBlock("GLOBALS")),
+            store_data: block.getFieldValue("STORE_DATA"),
             tasks: generateStatementJSON(block, "TASKS")
           };
         case "global_block":
@@ -1761,6 +1765,7 @@ HTML_PLAYGROUND_TEMPLATE = """
             "Admin:admin@password"
           ],
           "globals": {},
+          "store_data": "",
           "tasks": [
             {
               "name": "Admin Task",
@@ -1930,6 +1935,8 @@ HTML_PLAYGROUND_TEMPLATE = """
       globalWrapper.initSvg(); globalWrapper.render();
       user.getInput("GLOBALS").connection.connect(globalWrapper.previousConnection);
 
+      user.setFieldValue(data.store_data || "", "STORE_DATA");
+
       user.initSvg();
       user.render();
       return user;
@@ -2086,8 +2093,6 @@ def expand_targets(host_input):
     return targets
 
 
-
-from flask import Response
 
 @app.route("/style.css")
 def style_css():
