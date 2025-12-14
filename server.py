@@ -1382,8 +1382,15 @@ HTML_LOGS_TEMPLATE = """
       if (data && typeof data.total_of_users === 'number' && data.total_of_users !== null) {
         output += `Total of Users: ${data.total_of_users}\n\n`
       }
+      if  (data && typeof data.shortest_elapse === 'object' && data.shortest_elapse !== null) {
+        for (const [step, info] of Object.entries(data.shortest_elapse)) {
+          output += `[Shortest]\nUser: ${info.user}\nStep: ${step}\nStart From First Req: ${info.start_from_first_request}\nEnd From Last Req: ${info.end_from_last_request}\n${info.elapsed_time}\n\n`
+        }
+      }
       if  (data && typeof data.longest_elapse === 'object' && data.longest_elapse !== null) {
-        output += `[Longest]\nUser: ${data.longest_elapse.user}\nStep: ${data.longest_elapse.step}\nStart From First Req: ${data.longest_elapse.start_from_first_request}\nEnd From Last Req: ${data.longest_elapse.end_from_last_request}\n${data.longest_elapse.elapsed_time}\n\n`
+        for (const [step, info] of Object.entries(data.longest_elapse)) {
+          output += `[Longest]\nUser: ${info.user}\nStep: ${step}\nStart From First Req: ${info.start_from_first_request}\nEnd From Last Req: ${info.end_from_last_request}\n${info.elapsed_time}\n\n`
+        }
       }
       if (data && typeof data.over_all === 'object' && data.over_all !== null) {
         for (const [step, info] of Object.entries(data.over_all)) {
@@ -2422,11 +2429,23 @@ def elapsed_time():
     
 
     json_data = {}
-    max_elapsed_ms = -1
+    max_elapsed_ms = {}
+    min_elapsed_ms = {}
+
+    for index, (user, data) in enumerate(elapsed_by_step.items()):
+      json_data[user] = data
+      for step in json_data[user]:
+        if index == 0:
+          max_elapsed_ms[step] = -1
+          min_elapsed_ms[step] = 0
+
+    json_data = {}
     
-    for user, data in elapsed_by_step.items():
+    for index, (user, data) in enumerate(elapsed_by_step.items()):
         json_data[user] = data
         result["users"][user] = {}
+        result["shortest_elapse"] = {}
+        result["longest_elapse"] = {}
 
         
         for step in json_data[user]:
@@ -2443,9 +2462,29 @@ def elapsed_time():
           over_all_dir[step]["total_success_count"] += json_data[user][step]['success_count']
           over_all_dir[step]["total_fail_count"] += json_data[user][step]['fail_count']
 
-          if total_ms > max_elapsed_ms:
-            max_elapsed_ms = total_ms
-            result["longest_elapse"] = {
+          if index == 0:
+            min_elapsed_ms[step] = total_ms
+            result["shortest_elapse"][step] = {
+              "user": user,
+              "step": step,
+              "elapsed_time": f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
+              'start_from_first_request': json_data[user][step]['start_from_first_request'],
+              'end_from_last_request': json_data[user][step]['end_from_last_request'],
+            }
+
+          if total_ms < min_elapsed_ms[step]:
+            min_elapsed_ms[step] = total_ms
+            result["shortest_elapse"][step] = {
+              "user": user,
+              "step": step,
+              "elapsed_time": f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
+              'start_from_first_request': json_data[user][step]['start_from_first_request'],
+              'end_from_last_request': json_data[user][step]['end_from_last_request'],
+            }
+
+          if total_ms > max_elapsed_ms[step]:
+            max_elapsed_ms[step] = total_ms
+            result["longest_elapse"][step] = {
               "user": user,
               "step": step,
               "elapsed_time": f"Elapse Time: {days}d {hours}h {minutes}m {seconds}s {milliseconds}ms",
