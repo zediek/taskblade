@@ -179,7 +179,7 @@ class GenIMG:
         image_data = gen()
         encoded = base64.b64encode(image_data.getvalue()).decode("utf-8")
         return json.dumps({
-            "filename": "calling_card.jpg",
+            "filename": f"calling_card-{datetime.now()}.jpg",
             "mime_type": "image/jpeg",
             "image_data": encoded
         })
